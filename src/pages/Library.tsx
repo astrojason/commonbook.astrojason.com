@@ -6,6 +6,7 @@ import { Tag } from '../components/Tag'
 import { Chip } from '../components/Chip'
 import { StrengthBar } from '../components/StrengthBar'
 import type { Note } from '../types'
+import type { Timestamp } from 'firebase/firestore'
 
 type SortKey = 'recent' | 'strength' | 'tag'
 
@@ -19,6 +20,19 @@ function sortNotes(notes: Note[], sort: SortKey): Note[] {
     list.sort((a, b) => a.tag.localeCompare(b.tag) || a.title.localeCompare(b.title))
   }
   return list
+}
+
+function ageLabel(ts: Timestamp): string {
+  const now = new Date()
+  const then = ts.toDate()
+  const days = Math.floor((now.getTime() - then.getTime()) / 86400000)
+  if (days === 0) return 'today'
+  if (days === 1) return '1d'
+  if (days < 7) return `${days}d`
+  if (days < 14) return '1w'
+  if (days < 21) return '2w'
+  if (days < 28) return '3w'
+  return `${Math.floor(days / 7)}w`
 }
 
 export default function Library() {
@@ -47,92 +61,125 @@ export default function Library() {
   }, [notes, activeTag, query, sort])
 
   return (
-    <div className="pt-6 pb-24">
-      <div className="px-5 flex items-baseline justify-between">
-        <h1 className="font-sans text-[24px] font-light tracking-tight">Library</h1>
+    <div className="pt-6 pb-24 md:pt-0 md:pb-0 md:h-full md:flex md:flex-col">
+
+      {/* ── PAGE HEAD ── */}
+      <div className="px-5 md:px-10 md:pt-8 md:pb-6 md:flex md:items-end md:justify-between">
+        <div>
+          <div className="hidden md:block font-mono text-[10px] uppercase tracking-[0.22em] text-dim">Archive</div>
+          <h1 className="font-sans text-[24px] md:text-[28px] font-light tracking-tight md:mt-2 md:leading-none">
+            Library
+          </h1>
+        </div>
         <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
           {filtered.length} / {notes.length}
         </div>
       </div>
 
-      {/* search */}
-      <div className="px-5 mt-5">
-        <div className="flex items-center gap-3 border-b border-rule pb-2">
-          <span className="font-mono text-[12px]" style={{ color: 'var(--accent)' }}>/</span>
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="search title or tag…"
-            aria-label="search"
-            className="flex-1 bg-transparent border-0 outline-none font-mono text-[13px] caret-accent"
-            style={{ color: 'var(--text)' }}
-          />
-          {query && (
-            <button
-              onClick={() => setQuery('')}
-              className="font-mono text-[10px] text-dim hover:text-muted"
-            >
-              clr
+      {/* ── TOOLBAR ── */}
+      <div className="px-5 md:px-10 mt-5 md:mt-0 md:pb-5">
+        <div className="flex items-center gap-4 md:gap-6">
+          <div className="flex items-center gap-3 border-b border-rule pb-2 flex-1 md:max-w-[420px]">
+            <span className="font-mono text-[12px]" style={{ color: 'var(--accent)' }}>/</span>
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="search title or tag…"
+              aria-label="search"
+              className="flex-1 bg-transparent border-0 outline-none font-mono text-[13px] caret-accent"
+              style={{ color: 'var(--text)' }}
+            />
+            {query && (
+              <button
+                onClick={() => setQuery('')}
+                className="font-mono text-[10px] text-dim hover:text-muted"
+              >
+                clr
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.18em]">
+            <span className="text-dim">sort</span>
+            {(['recent', 'strength', 'tag'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setSort(s)}
+                style={{ color: sort === s ? 'var(--accent)' : 'var(--muted)' }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 flex gap-2 overflow-x-auto noscrollbar md:flex-wrap">
+          {tags.map(t => (
+            <button key={t} onClick={() => setActiveTag(t)} className="shrink-0">
+              <Chip active={activeTag === t}>{t}</Chip>
             </button>
-          )}
+          ))}
         </div>
       </div>
 
-      {/* tag filter */}
-      <div className="mt-4 px-5 flex gap-2 overflow-x-auto noscrollbar">
-        {tags.map(t => (
-          <button key={t} onClick={() => setActiveTag(t)} className="shrink-0">
-            <Chip active={activeTag === t}>{t}</Chip>
-          </button>
-        ))}
+      <Rule />
+
+      {/* desktop column header */}
+      <div className="hidden md:grid md:grid-cols-[1fr_160px_180px] md:gap-4 md:px-10 md:py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+        <span>title</span>
+        <span>updated</span>
+        <span>strength</span>
       </div>
+      <div className="hidden md:block"><Rule /></div>
 
-      {/* sort */}
-      <div className="mt-4 px-5 flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.18em]">
-        <span className="text-dim">sort</span>
-        {(['recent', 'strength', 'tag'] as const).map(s => (
-          <button
-            key={s}
-            onClick={() => setSort(s)}
-            style={{ color: sort === s ? 'var(--accent)' : 'var(--muted)' }}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
+      {/* ── LIST ── */}
+      <div className="md:flex-1 md:overflow-y-auto md:thinbar">
+        {filtered.length === 0 && (
+          <div className="px-5 md:px-10 py-8 font-mono text-[12px] text-dim">No notes match.</div>
+        )}
 
-      <div className="mt-5"><Rule /></div>
-
-      {filtered.length === 0 && (
-        <div className="px-5 py-8 font-mono text-[12px] text-dim">No notes match.</div>
-      )}
-
-      <ul>
-        {filtered.map((n, i) => (
-          <li key={n.id}>
-            <button
-              onClick={() => navigate(`/note/${n.id}`)}
-              className="w-full text-left px-5 py-4 hover:bg-ink-2"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <Tag>{n.tag}</Tag>
-                  <div className="mt-1 font-sans text-[15px] leading-snug">{n.title}</div>
-                  {n.last_rating != null && (
-                    <div className="mt-2">
-                      <StrengthBar value={n.last_rating} />
+        <ul>
+          {filtered.map((n, i) => (
+            <li key={n.id}>
+              <button
+                onClick={() => navigate(`/note/${n.id}`)}
+                className="w-full text-left px-5 md:px-10 py-4 hover:bg-ink-2 transition-colors md:grid md:grid-cols-[1fr_160px_180px] md:gap-4 md:items-center"
+              >
+                {/* Title + tag: flex layout on mobile, grid cell on desktop */}
+                <div className="flex items-start justify-between gap-4 md:block">
+                  <div className="min-w-0">
+                    <Tag>{n.tag}</Tag>
+                    <div className="mt-1 font-sans text-[15px] leading-snug md:truncate">{n.title}</div>
+                    {/* strength: visible on mobile inline, hidden on desktop (shown in grid col 3) */}
+                    <div className="mt-2 md:hidden">
+                      {n.last_rating != null && <StrengthBar value={n.last_rating} />}
                     </div>
-                  )}
+                  </div>
+                  {/* arrow: mobile only */}
+                  <div className="font-mono text-[10px] text-dim pt-1 md:hidden">→</div>
                 </div>
-                <div className="font-mono text-[10px] text-dim pt-1">→</div>
-              </div>
-            </button>
-            {i < filtered.length - 1 && <Rule dashed />}
-          </li>
-        ))}
-      </ul>
 
-      {filtered.length > 0 && <Rule />}
+                {/* updated: hidden on mobile (no room), visible on desktop as grid col 2 */}
+                <span className="hidden md:block font-mono text-[11px] text-muted uppercase tracking-wider">
+                  {ageLabel(n.created_at)}
+                </span>
+
+                {/* strength: hidden on mobile (shown inline above), visible on desktop as grid col 3 */}
+                <div className="hidden md:block">
+                  {n.last_rating != null
+                    ? <StrengthBar value={n.last_rating} />
+                    : <span className="font-mono text-[11px] text-dim">—</span>}
+                </div>
+              </button>
+              {i < filtered.length - 1 && <Rule dashed />}
+            </li>
+          ))}
+        </ul>
+
+        {filtered.length > 0 && <Rule />}
+        <div className="px-5 md:px-10 py-6 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+          {notes.length} notes archived
+        </div>
+      </div>
     </div>
   )
 }

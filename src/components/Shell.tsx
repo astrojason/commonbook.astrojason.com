@@ -1,18 +1,33 @@
+import { useEffect, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { subscribeToNotes } from '../lib/notes'
+import { Rule } from './Rule'
 
 const NAV = [
-  { label: 'dash',    path: '/',        active: (p: string) => p === '/' },
-  { label: 'capture', path: '/capture', active: (p: string) => p.startsWith('/capture') },
-  { label: 'note',    path: null,       active: (p: string) => p.startsWith('/note/') },
-  { label: 'session', path: null,       active: (p: string) => p.startsWith('/session/') },
-  { label: 'library', path: '/library', active: (p: string) => p.startsWith('/library') },
+  { label: 'dash',    desktopLabel: 'Dashboard', key: 'D', path: '/',        active: (p: string) => p === '/' },
+  { label: 'capture', desktopLabel: 'Capture',   key: 'C', path: '/capture', active: (p: string) => p.startsWith('/capture') },
+  { label: 'note',    desktopLabel: 'Note',       key: 'N', path: null,       active: (p: string) => p.startsWith('/note/') },
+  { label: 'session', desktopLabel: 'Session',    key: 'S', path: null,       active: (p: string) => p.startsWith('/session/') },
+  { label: 'library', desktopLabel: 'Library',    key: 'L', path: '/library', active: (p: string) => p.startsWith('/library') },
 ]
+
+function pad2(n: number) {
+  return String(n).padStart(2, '0')
+}
 
 export function Shell() {
   const location = useLocation()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const [dueCount, setDueCount] = useState(0)
+
+  useEffect(() => {
+    return subscribeToNotes(notes => {
+      const now = new Date()
+      setDueCount(notes.filter(n => n.next_review_at.toDate() <= now).length)
+    })
+  }, [])
 
   const currentNav = NAV.find(item => item.active(location.pathname))
   const initials = user?.displayName
@@ -25,9 +40,10 @@ export function Shell() {
     : '–'
 
   return (
-    <div className="flex flex-col h-dvh bg-ink max-w-[390px] mx-auto">
-      {/* status bar */}
-      <div className="shrink-0 px-5 pt-3 pb-1 flex items-center justify-between font-mono text-[10px] text-muted">
+    <div className="flex flex-col h-dvh bg-ink max-w-[390px] mx-auto md:flex-row md:max-w-none md:mx-0">
+
+      {/* ── MOBILE: status bar ── */}
+      <div className="md:hidden shrink-0 px-5 pt-3 pb-1 flex items-center justify-between font-mono text-[10px] text-muted">
         <span className="invisible select-none">00:00</span>
         <div className="flex items-center gap-2">
           <span>●●●</span>
@@ -36,12 +52,10 @@ export function Shell() {
         </div>
       </div>
 
-      {/* brand bar */}
-      <div className="shrink-0 px-5 pt-1 pb-3 flex items-center justify-between border-b border-rule">
+      {/* ── MOBILE: brand bar ── */}
+      <div className="md:hidden shrink-0 px-5 pt-1 pb-3 flex items-center justify-between border-b border-rule">
         <div className="flex items-baseline gap-2">
-          <span className="font-mono text-[13px] tracking-[0.2em] uppercase font-medium">
-            recall
-          </span>
+          <span className="font-mono text-[13px] tracking-[0.2em] uppercase font-medium">recall</span>
           <span className="font-mono text-[13px] text-accent">/</span>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
             {currentNav?.label ?? ''}
@@ -53,13 +67,88 @@ export function Shell() {
         </div>
       </div>
 
-      {/* scrollable body */}
-      <div className="flex-1 overflow-y-auto noscrollbar">
+      {/* ── DESKTOP: sidebar ── */}
+      <aside className="hidden md:flex md:w-[220px] md:shrink-0 md:border-r md:border-rule md:flex-col md:bg-ink-2">
+        {/* traffic lights + brand */}
+        <div className="px-5 pt-4 pb-5">
+          <div className="flex items-center gap-[7px] mb-6">
+            <span className="w-3 h-3 border border-rule-2 rounded-full" />
+            <span className="w-3 h-3 border border-rule-2 rounded-full" />
+            <span className="w-3 h-3 border border-rule-2 rounded-full" />
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="font-mono text-[15px] tracking-[0.2em] uppercase font-medium">recall</span>
+            <span className="font-mono text-[15px] text-accent">/</span>
+          </div>
+          <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">knowledge retention</div>
+        </div>
+
+        <Rule />
+
+        <nav className="py-3">
+          {NAV.map(item => {
+            const active = item.active(location.pathname)
+            return (
+              <button
+                key={item.label}
+                onClick={() => item.path && navigate(item.path)}
+                disabled={!item.path}
+                className="w-full flex items-center gap-3 px-5 py-[10px] text-left relative disabled:cursor-default"
+              >
+                {active && <span className="absolute left-0 top-0 bottom-0 w-[2px] bg-accent" />}
+                <span
+                  className="font-mono text-[13px] uppercase tracking-[0.12em]"
+                  style={{ color: active ? 'var(--accent)' : 'var(--muted)' }}
+                >
+                  {item.desktopLabel}
+                </span>
+                <span className="ml-auto font-mono text-[10px] text-dim">{item.key}</span>
+              </button>
+            )
+          })}
+        </nav>
+
+        <Rule />
+
+        {/* due widget */}
+        <button
+          onClick={() => navigate('/')}
+          className="mx-5 mt-5 px-4 py-3 border border-rule hover:border-accent text-left transition-colors group"
+        >
+          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">due now</div>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="font-mono text-[24px] font-light text-accent">{pad2(dueCount)}</span>
+            <span className="font-mono text-[10px] text-muted">notes</span>
+          </div>
+          <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted group-hover:text-accent transition-colors">
+            begin session →
+          </div>
+        </button>
+
+        <div className="flex-1" />
+
+        <Rule />
+
+        {/* user footer */}
+        <div className="px-5 py-4 flex items-center gap-3">
+          <span className="w-7 h-7 border border-rule-2 grid place-items-center font-mono text-[11px] text-muted shrink-0">
+            {initials}
+          </span>
+          <div className="min-w-0">
+            <div className="font-mono text-[11px] truncate">{user?.displayName ?? '—'}</div>
+            <div className="font-mono text-[10px] text-dim">—</div>
+          </div>
+        </div>
+      </aside>
+
+      {/* ── BODY ── */}
+      {/* Mobile: scrollable wrapper. Desktop: fixed height, pages handle own scroll */}
+      <div className="flex-1 overflow-y-auto noscrollbar md:overflow-hidden md:min-w-0 md:flex md:flex-col">
         <Outlet />
       </div>
 
-      {/* bottom nav */}
-      <div className="shrink-0 bg-ink border-t border-rule">
+      {/* ── MOBILE: bottom nav ── */}
+      <div className="md:hidden shrink-0 bg-ink border-t border-rule">
         <div className="px-5 py-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.18em]">
           {NAV.map(item => {
             const isActive = item.active(location.pathname)

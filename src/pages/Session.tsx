@@ -190,24 +190,28 @@ export default function SessionPage() {
   const shortId = session.id.slice(-4).toUpperCase()
 
   return (
-    <div className="flex flex-col min-h-full pt-5 pb-32">
-      {/* header */}
-      <div className="px-5 flex items-center justify-between">
+    <div className="flex flex-col pt-5 pb-32 min-h-full md:pt-0 md:pb-0 md:h-full">
+
+      {/* session header */}
+      <div className="px-5 md:px-10 md:pt-6 md:pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="inline-block w-[8px] h-[8px] bg-accent" />
-          <span className="font-mono text-[11px] uppercase tracking-[0.18em]">
+          <span className="font-mono text-[11px] md:text-[12px] uppercase tracking-[0.18em]">
             Session · {shortId}
+          </span>
+          <span className="hidden md:inline font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+            {note.tag}
           </span>
         </div>
         <button
           onClick={() => navigate(`/note/${note.id}`)}
           className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted hover:text-[color:var(--text)]"
         >
-          end
+          end session ✕
         </button>
       </div>
 
-      <div className="px-5 mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+      <div className="md:hidden px-5 mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
         {note.tag} · {note.title}
       </div>
 
@@ -216,10 +220,8 @@ export default function SessionPage() {
       {/* token gate */}
       {tokenGate && (
         <div className="px-5 py-6 bg-ink-2 mx-5 mt-5 border border-rule-2">
-          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
-            High usage
-          </div>
-          <div className="mt-2 font-mono text-[13px] text-[color:var(--text)]">
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">High usage</div>
+          <div className="mt-2 font-mono text-[13px]">
             You've used {Math.round(tokenGateCount / 1000)}k tokens today. Continue anyway?
           </div>
           <div className="mt-4 flex gap-3">
@@ -240,101 +242,119 @@ export default function SessionPage() {
       )}
 
       {!tokenGate && (
-        <>
-          {/* transcript */}
-          <div className="px-5 py-5 font-mono text-[13px] leading-[1.7] space-y-5 flex-1">
-            {messages.length === 0 && !streaming && (
-              <div className="text-dim">Waiting for your first message…</div>
+        <div className="flex-1 md:grid md:grid-cols-[1fr_300px] md:min-h-0 md:overflow-hidden">
+
+          {/* LEFT: transcript + composer */}
+          <div className="md:border-r md:border-rule md:flex md:flex-col md:min-h-0">
+
+            {/* transcript */}
+            <div className="px-5 md:px-10 py-5 font-mono text-[13px] md:text-[14px] leading-[1.7] md:leading-[1.75] space-y-4 md:space-y-5 flex-1 md:overflow-y-auto md:thinbar">
+              <div className="md:max-w-[760px]">
+                {messages.length === 0 && !streaming && (
+                  <div className="text-dim">Waiting for your first message…</div>
+                )}
+
+                {messages.map((m, i) => (
+                  <div key={i}>
+                    <div
+                      className="font-mono text-[11px] uppercase tracking-[0.18em]"
+                      style={{ color: m.role === 'user' ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}
+                    >
+                      {m.role === 'user' ? '> me' : 'recall'}
+                    </div>
+                    <div className="mt-[2px]">{m.content}</div>
+                  </div>
+                ))}
+
+                {streaming && (
+                  <div>
+                    <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted" style={{ fontWeight: 500 }}>
+                      recall
+                    </div>
+                    <div className="mt-[2px]">
+                      {streamText || (
+                        <span className="text-dim flex items-center gap-2">
+                          <span className="inline-block w-[7px] h-[14px] bg-accent animate-pulse" />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {done && (
+                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
+                    — session complete —
+                  </div>
+                )}
+
+                <div ref={bottomRef} />
+              </div>
+            </div>
+
+            {/* inline error + retry */}
+            {error && (
+              <div className="px-5 md:px-10 pb-3 flex items-center gap-3">
+                <span className="font-mono text-[12px] text-accent">{error}</span>
+                {retryMessage && (
+                  <button
+                    onClick={() => handleSend(retryMessage)}
+                    className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent"
+                  >
+                    retry →
+                  </button>
+                )}
+              </div>
             )}
 
-            {messages.map((m, i) => (
-              <div key={i}>
-                <div
-                  className="font-mono text-[11px] uppercase tracking-[0.18em]"
-                  style={{
-                    color: m.role === 'user' ? 'var(--accent)' : 'var(--muted)',
-                    fontWeight: 500,
-                  }}
-                >
-                  {m.role === 'user' ? '> me' : 'recall'}
+            {/* Composer — inlined (not a separate component) to avoid remounting */}
+            {!done && (
+              <div className="border-t border-rule">
+                <div className="px-5 md:px-10 py-3">
+                  <div className="flex items-start gap-2 font-mono text-[13px] md:max-w-[760px]">
+                    <span className="text-accent shrink-0 pt-[2px]">&gt;</span>
+                    <textarea
+                      value={input}
+                      onChange={e => setInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      rows={2}
+                      placeholder="type your answer…"
+                      disabled={streaming}
+                      aria-label="message input"
+                      className="flex-1 bg-transparent border-0 outline-none resize-none caret-accent leading-relaxed disabled:opacity-50"
+                      style={{ color: 'var(--text)' }}
+                    />
+                  </div>
                 </div>
-                <div className="mt-[2px] text-[color:var(--text)]">{m.content}</div>
-              </div>
-            ))}
-
-            {streaming && (
-              <div>
-                <div
-                  className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted"
-                  style={{ fontWeight: 500 }}
-                >
-                  recall
+                <div className="px-5 md:px-10 pb-4 flex items-center justify-between md:max-w-[760px]">
+                  <div className="flex gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+                    <button type="button" className="hover:text-muted">skip</button>
+                    <span>·</span>
+                    <button type="button" className="hover:text-muted">hint</button>
+                  </div>
+                  <button
+                    onClick={() => handleSend()}
+                    disabled={streaming || !input.trim()}
+                    className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent disabled:border-rule disabled:text-dim"
+                  >
+                    {streaming ? '…' : 'send ↵'}
+                  </button>
                 </div>
-                <div className="mt-[2px] text-[color:var(--text)]">
-                  {streamText || (
-                    <span className="text-dim flex items-center gap-2">
-                      <span className="inline-block w-[7px] h-[14px] bg-accent animate-pulse" />
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {done && (
-              <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
-                — session complete —
               </div>
             )}
-
-            <div ref={bottomRef} />
           </div>
 
-          {/* inline error + retry */}
-          {error && (
-            <div className="px-5 pb-3 flex items-center gap-3">
-              <span className="font-mono text-[12px] text-accent">{error}</span>
-              {retryMessage && (
-                <button
-                  onClick={() => handleSend(retryMessage)}
-                  className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent"
-                >
-                  retry →
-                </button>
-              )}
-            </div>
-          )}
+          {/* RIGHT: context rail — desktop only */}
+          <div className="hidden md:flex md:flex-col md:overflow-y-auto md:thinbar md:px-7 md:py-7">
+            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Note in focus</div>
+            <div className="mt-2 font-sans text-[14px] leading-snug">{note.title}</div>
+            <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">{note.tag}</div>
 
-          {/* composer */}
-          {!done && (
-            <div className="border-t border-rule">
-              <div className="px-5 py-3">
-                <div className="flex items-start gap-2 font-mono text-[13px]">
-                  <span className="text-accent shrink-0 pt-[2px]">&gt;</span>
-                  <textarea
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    rows={2}
-                    placeholder="type your answer…"
-                    disabled={streaming}
-                    aria-label="message input"
-                    className="flex-1 bg-transparent border-0 outline-none resize-none caret-accent leading-relaxed disabled:opacity-50"
-                    style={{ color: 'var(--text)' }}
-                  />
-                </div>
-              </div>
-              <div className="px-5 pb-4 flex justify-end">
-                <button
-                  onClick={() => handleSend()}
-                  disabled={streaming || !input.trim()}
-                  className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent disabled:border-rule disabled:text-dim"
-                >
-                  {streaming ? '…' : 'send ↵'}
-                </button>
-              </div>
-            </div>
-          )}
-        </>
+            <div className="mt-8"><Rule /></div>
+
+            <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">What</div>
+            <p className="mt-3 font-mono text-[12px] text-muted leading-relaxed">{note.what_it_said}</p>
+          </div>
+        </div>
       )}
 
       {/* offline toast */}

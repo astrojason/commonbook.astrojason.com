@@ -30,6 +30,12 @@ function pad2(n: number) {
   return String(n).padStart(2, '0')
 }
 
+function formatDate(d: Date): string {
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return `${days[d.getDay()]} · ${d.getDate()} ${months[d.getMonth()]}`
+}
+
 export default function Dashboard() {
   const navigate = useNavigate()
   const [notes, setNotes] = useState<Note[]>([])
@@ -79,32 +85,40 @@ export default function Dashboard() {
   }
 
   const mostOverdue = dueNotes[0]
+  const today = formatDate(new Date())
 
   return (
-    <div className="pt-6 pb-24">
-      {/* heading */}
-      <div className="px-5">
-        <h1 className="font-sans text-[26px] leading-[1.15] font-light tracking-tight">
-          {dueNotes.length === 0
-            ? 'Nothing due today.'
-            : (
-              <>
-                {dueNotes.length === 1 ? 'One note is' : `${dueNotes.length} notes are`}{' '}
-                <span style={{ color: 'var(--accent)' }}>due for review</span>.
-              </>
-            )}
-        </h1>
-        {dueNotes.length > 0 && (
-          <p className="mt-2 font-mono text-[12px] text-muted leading-relaxed">
-            Sit with them before they cool. A session takes about eight minutes.
-          </p>
-        )}
+    <div className="pt-6 pb-24 md:pt-0 md:pb-0 md:h-full md:flex md:flex-col">
 
+      {/* ── PAGE HEAD ──
+          Mobile: flex-col → title stacks above button
+          Desktop: flex-row items-end justify-between → title left, button right
+      */}
+      <div className="px-5 md:px-10 md:pt-8 md:pb-6 md:flex md:items-end md:justify-between">
+        <div>
+          <div className="hidden md:block font-mono text-[10px] uppercase tracking-[0.22em] text-dim">
+            {today}
+          </div>
+          <h1 className="font-sans text-[26px] md:text-[28px] leading-[1.15] md:leading-none font-light tracking-tight md:mt-2">
+            {dueNotes.length === 0
+              ? 'Nothing due today.'
+              : (
+                <>
+                  {dueNotes.length === 1 ? 'One note is' : `${dueNotes.length} notes are`}{' '}
+                  <span style={{ color: 'var(--accent)' }}>due for review</span>.
+                </>
+              )}
+          </h1>
+          <p className="mt-2 md:hidden font-mono text-[12px] text-muted leading-relaxed">
+            {dueNotes.length > 0 && 'Sit with them before they cool. A session takes about eight minutes.'}
+          </p>
+        </div>
+        {/* Single Begin Session button — below title on mobile, right of title on desktop */}
         {mostOverdue && (
           <button
             onClick={() => beginSession(mostOverdue.id)}
             disabled={starting}
-            className="mt-5 inline-flex items-center gap-3 font-mono text-[12px] uppercase tracking-[0.14em] px-4 py-3 border border-accent text-ink bg-accent disabled:opacity-70"
+            className="mt-5 md:mt-0 inline-flex items-center gap-3 font-mono text-[12px] uppercase tracking-[0.14em] px-4 py-3 border border-accent text-ink bg-accent disabled:opacity-70"
           >
             <span>Begin session</span>
             <span className="opacity-70">→</span>
@@ -112,128 +126,153 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* due notes */}
-      {dueNotes.length > 0 && (
-        <>
-          <div className="mt-10 px-5 flex items-baseline justify-between">
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
-              Due · {pad2(dueNotes.length)}
-            </div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
-              strength · age
-            </div>
-          </div>
-          <Rule />
-          <ul>
-            {dueNotes.map((n, i) => {
-              const od = overdueDays(n.next_review_at)
-              return (
-                <li key={n.id}>
-                  <button
-                    onClick={() => navigate(`/note/${n.id}`)}
-                    className="w-full text-left px-5 py-4 hover:bg-ink-2"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <div className="font-sans text-[15px] leading-snug">{n.title}</div>
-                        <div className="mt-1 font-mono text-[11px] text-muted truncate">
-                          {n.what_it_said}
-                        </div>
-                        <div className="mt-2 flex items-center gap-3">
-                          <Tag>{n.tag}</Tag>
-                          <span className="font-mono text-[10px] text-dim">·</span>
-                          <span
-                            className="font-mono text-[10px] uppercase tracking-wider"
-                            style={{ color: od > 0 ? 'var(--accent)' : 'var(--muted)' }}
-                          >
-                            {od === 0 ? 'due today' : `${od}d overdue`}
-                          </span>
-                        </div>
-                      </div>
-                      {n.last_rating != null && (
-                        <div className="shrink-0 pt-1">
-                          <StrengthBar value={n.last_rating} showLabel={false} />
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                  {i < dueNotes.length - 1 && <Rule dashed />}
-                </li>
-              )
-            })}
-          </ul>
-          <Rule />
-        </>
-      )}
+      <Rule />
 
-      {/* recent notes */}
-      {recentNotes.length > 0 && (
-        <>
-          <div className="mt-10 px-5 flex items-baseline justify-between">
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Recent</div>
-            <button
-              onClick={() => navigate('/library')}
-              className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim hover:text-muted"
-            >
-              all →
-            </button>
-          </div>
-          <Rule />
-          <ul>
-            {recentNotes.map((n, i) => (
-              <li key={n.id}>
+      {/* ── CONTENT: mobile = stacked cols, desktop = 2-column grid ── */}
+      <div className="md:flex-1 md:grid md:grid-cols-[1.55fr_1fr] md:min-h-0">
+
+        {/* LEFT: due notes */}
+        <div className="md:border-r md:border-rule md:overflow-y-auto md:thinbar">
+          {dueNotes.length > 0 && (
+            <>
+              <div className="mt-10 md:mt-0 px-5 md:px-10 pt-0 md:pt-6 pb-3 flex items-baseline justify-between">
+                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+                  Due · {pad2(dueNotes.length)}
+                </div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+                  strength · age
+                </div>
+              </div>
+              <Rule />
+              <ul>
+                {dueNotes.map((n, i) => {
+                  const od = overdueDays(n.next_review_at)
+                  return (
+                    <li key={n.id}>
+                      <button
+                        onClick={() => navigate(`/note/${n.id}`)}
+                        className="group w-full text-left px-5 md:px-10 py-4 md:py-6 hover:bg-ink-2 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-4 md:gap-6">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-3">
+                              <Tag>{n.tag}</Tag>
+                              <span className="font-mono text-[10px] text-dim">·</span>
+                              <span
+                                className="font-mono text-[10px] uppercase tracking-wider"
+                                style={{ color: od > 0 ? 'var(--accent)' : 'var(--muted)' }}
+                              >
+                                {od === 0 ? 'due today' : `${od}d overdue`}
+                              </span>
+                            </div>
+                            <div className="mt-2 font-sans text-[15px] md:text-[18px] leading-snug">
+                              {n.title}
+                            </div>
+                            <div className="mt-1 md:mt-2 font-mono text-[11px] md:text-[12px] text-muted truncate md:whitespace-normal md:max-w-[46ch] md:leading-relaxed">
+                              {n.what_it_said}
+                            </div>
+                          </div>
+                          <div className="shrink-0 pt-1 flex flex-col items-end gap-3">
+                            {n.last_rating != null && (
+                              <StrengthBar value={n.last_rating} showLabel={false} />
+                            )}
+                            <span className="hidden md:block font-mono text-[11px] text-dim opacity-0 group-hover:opacity-100 transition-opacity">
+                              review →
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                      {i < dueNotes.length - 1 && <Rule dashed />}
+                    </li>
+                  )
+                })}
+              </ul>
+              <Rule />
+            </>
+          )}
+        </div>
+
+        {/* RIGHT: recent notes + stats */}
+        <div className="md:overflow-y-auto md:thinbar">
+          {recentNotes.length > 0 && (
+            <>
+              <div className="mt-10 md:mt-0 px-5 md:px-8 pt-0 md:pt-6 pb-3 flex items-baseline justify-between">
+                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Recent</div>
                 <button
-                  onClick={() => navigate(`/note/${n.id}`)}
-                  className="w-full text-left px-5 py-3 hover:bg-ink-2"
+                  onClick={() => navigate('/library')}
+                  className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim hover:text-muted"
                 >
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="font-sans text-[14px] truncate text-[color:var(--text)]">
-                        {n.title}
-                      </div>
-                      <div className="mt-[2px] flex items-center gap-3">
-                        <Tag>{n.tag}</Tag>
-                        <span className="font-mono text-[10px] text-dim">·</span>
-                        <span className="font-mono text-[10px] text-dim">
-                          {ageLabel(n.created_at)}
-                        </span>
-                      </div>
-                    </div>
-                    {n.last_rating != null && (
-                      <StrengthBar value={n.last_rating} showLabel={false} />
-                    )}
-                  </div>
+                  all →
                 </button>
-                {i < recentNotes.length - 1 && <Rule dashed />}
-              </li>
-            ))}
-          </ul>
-          <Rule />
-        </>
-      )}
+              </div>
+              <Rule />
+              <ul>
+                {recentNotes.map((n, i) => (
+                  <li key={n.id}>
+                    <button
+                      onClick={() => navigate(`/note/${n.id}`)}
+                      className="w-full text-left px-5 md:px-8 py-3 md:py-4 hover:bg-ink-2 transition-colors"
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="font-sans text-[14px] truncate">{n.title}</div>
+                          <div className="mt-[2px] md:mt-1 flex items-center gap-3">
+                            <Tag>{n.tag}</Tag>
+                            <span className="font-mono text-[10px] text-dim">·</span>
+                            <span className="font-mono text-[10px] text-dim">
+                              {ageLabel(n.created_at)}
+                            </span>
+                          </div>
+                        </div>
+                        {n.last_rating != null && (
+                          <StrengthBar value={n.last_rating} showLabel={false} />
+                        )}
+                      </div>
+                    </button>
+                    {i < recentNotes.length - 1 && <Rule dashed />}
+                  </li>
+                ))}
+              </ul>
+              <Rule />
+            </>
+          )}
 
-      {/* stats */}
-      <div className="mt-8 px-5 grid grid-cols-2 gap-4">
-        <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">notes</div>
-          <div className="mt-1 flex items-baseline gap-1">
-            <span className="font-mono text-[22px] text-[color:var(--text)] font-light">
-              {stats?.total_notes ?? '—'}
-            </span>
-            <span className="font-mono text-[10px] text-muted">total</span>
+          {/* stats */}
+          <div className="mt-8 md:mt-0 px-5 md:px-8 py-0 md:py-7">
+            <div className="hidden md:block font-mono text-[10px] uppercase tracking-[0.18em] text-muted mb-4">
+              Totals
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">notes</div>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span className="font-mono text-[22px] md:text-[26px] font-light">
+                    {stats?.total_notes ?? '—'}
+                  </span>
+                  <span className="font-mono text-[10px] text-muted">total</span>
+                </div>
+              </div>
+              {recallPct !== null && (
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">recall</div>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="font-mono text-[22px] md:text-[26px] font-light">{recallPct}</span>
+                    <span className="font-mono text-[10px] text-muted">percent</span>
+                  </div>
+                </div>
+              )}
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">sessions</div>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span className="font-mono text-[22px] md:text-[26px] font-light">
+                    {stats?.total_sessions ?? '—'}
+                  </span>
+                  <span className="font-mono text-[10px] text-muted">total</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        {recallPct !== null && (
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">recall</div>
-            <div className="mt-1 flex items-baseline gap-1">
-              <span className="font-mono text-[22px] text-[color:var(--text)] font-light">
-                {recallPct}
-              </span>
-              <span className="font-mono text-[10px] text-muted">percent</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* offline toast */}

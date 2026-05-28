@@ -23,19 +23,20 @@ function FormField({
   rows?: number
 }) {
   return (
-    <div className="px-5 py-5">
+    <div className="px-5 md:px-0 py-5 md:py-7">
       <div className="flex items-baseline gap-3">
-        <span className="font-mono text-[10px] text-dim">{n}</span>
-        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">{label}</span>
+        <span className="font-mono text-[10px] md:text-[11px] text-dim">{n}</span>
+        <span className="font-mono text-[11px] md:text-[12px] uppercase tracking-[0.18em] text-accent">{label}</span>
+        <span className="hidden md:inline font-mono text-[11px] text-muted">— {hint}</span>
       </div>
-      <p className="mt-1 font-mono text-[11px] text-muted leading-relaxed">{hint}</p>
+      <p className="mt-1 md:hidden font-mono text-[11px] text-muted leading-relaxed">{hint}</p>
       <textarea
         aria-label={label}
         value={value}
         onChange={e => onChange(e.target.value)}
         rows={rows}
         placeholder="—"
-        className="mt-3 w-full bg-transparent border-0 outline-none resize-none font-mono text-[14px] leading-relaxed caret-accent"
+        className="mt-3 md:mt-4 w-full bg-transparent border-0 outline-none resize-none font-mono text-[14px] md:text-[16px] leading-relaxed caret-accent"
         style={{ color: 'var(--text)' }}
       />
       <div className="dashed-rule mt-2" />
@@ -83,132 +84,158 @@ export function CaptureForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="pt-6 pb-32">
-      {/* header */}
-      <div className="px-5">
+    <form onSubmit={handleSubmit} noValidate className="pt-6 pb-32 md:pt-0 md:pb-0 md:h-full md:flex md:flex-col">
+
+      {/* ── PAGE HEAD ── */}
+      <div className="px-5 md:px-10 md:pt-8 md:pb-6">
         <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
           {isEdit ? 'Edit entry' : 'New entry'}
         </div>
-        <h1 className="mt-2 font-sans text-[24px] leading-tight font-light">
+        <h1 className="mt-2 font-sans text-[24px] md:text-[28px] leading-tight md:leading-none font-light">
           {isEdit
             ? <>Edit and keep it <span className="text-accent">accurate</span>.</>
-            : <>Write it down once,<br />so you don't forget it <span className="text-accent">twice</span>.</>}
+            : <>Write it down once.</>}
         </h1>
-      </div>
-
-      {/* title */}
-      <div className="px-5 py-5">
-        <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">Title</div>
-        <input
-          type="text"
-          aria-label="title"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          placeholder="Note title…"
-          className="mt-3 w-full bg-transparent border-0 outline-none font-sans text-[18px] leading-relaxed caret-accent"
-          style={{ color: 'var(--text)' }}
-        />
-        <div className="dashed-rule mt-2" />
-      </div>
-
-      <Rule />
-
-      <FormField
-        n="01"
-        label="What did it say?"
-        hint="One idea. Compress it. If it needs two sentences, that's fine — three is suspicious."
-        value={whatItSaid}
-        onChange={setWhatItSaid}
-        rows={3}
-      />
-
-      <Rule />
-
-      <FormField
-        n="02"
-        label="Why does it matter?"
-        hint="What does this unlock, contradict, or replace? If nothing — reconsider keeping it."
-        value={whyItMatters}
-        onChange={setWhyItMatters}
-        rows={4}
-      />
-
-      <Rule />
-
-      <FormField
-        n="03"
-        label="How would you explain it?"
-        hint="To a smart friend, in plain words. Analogies welcome. Jargon is a debt."
-        value={application}
-        onChange={setApplication}
-        rows={4}
-      />
-
-      <Rule />
-
-      {/* tag */}
-      <div className="px-5 py-5">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Tag</div>
-        {existingTags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {existingTags.map(t => (
-              <button type="button" key={t} onClick={() => setTag(t)}>
-                <Chip active={tag === t}>{t}</Chip>
-              </button>
-            ))}
+        {!isEdit && (
+          <div className="hidden md:block mt-2 font-mono text-[11px] text-muted max-w-[34ch] leading-relaxed">
+            So you don't forget it <span className="text-accent">twice</span>. Three prompts — answer what you can.
           </div>
         )}
-        <input
-          type="text"
-          aria-label="tag"
-          value={tag}
-          onChange={e => setTag(e.target.value)}
-          placeholder="Enter a tag…"
-          className="mt-3 w-full bg-transparent border-0 border-b outline-none font-mono text-[13px] caret-accent pb-2"
-          style={{ color: 'var(--text)', borderColor: 'var(--rule)' }}
-        />
       </div>
 
       <Rule />
 
-      {/* source url */}
-      <div className="px-5 py-5">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
-          Source URL <span className="text-dim">(optional)</span>
+      {/*
+        Layout: single DOM structure, grid changes on desktop.
+        Mobile: grid-cols-1 → meta rail appears below form fields.
+        Desktop: grid-cols-[1fr_300px] → meta rail beside form fields.
+      */}
+      <div className="md:flex-1 md:grid md:grid-cols-[1fr_300px] md:min-h-0">
+
+        {/* LEFT / MAIN: title + fields */}
+        <div className="md:overflow-y-auto md:thinbar md:px-10">
+          <div className="md:max-w-[680px]">
+
+            <div className="px-5 md:px-0 py-5 md:py-7">
+              <div className="font-mono text-[11px] md:text-[12px] uppercase tracking-[0.18em] text-accent">Title</div>
+              <input
+                type="text"
+                aria-label="title"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                placeholder="Note title…"
+                className="mt-3 w-full bg-transparent border-0 outline-none font-sans text-[18px] leading-relaxed caret-accent"
+                style={{ color: 'var(--text)' }}
+              />
+              <div className="dashed-rule mt-2" />
+            </div>
+
+            <Rule />
+
+            <FormField
+              n="01"
+              label="What did it say?"
+              hint="One idea. Compress it. If it needs two sentences, that's fine — three is suspicious."
+              value={whatItSaid}
+              onChange={setWhatItSaid}
+              rows={3}
+            />
+
+            <Rule />
+
+            <FormField
+              n="02"
+              label="Why does it matter?"
+              hint="What does this unlock, contradict, or replace? If nothing — reconsider keeping it."
+              value={whyItMatters}
+              onChange={setWhyItMatters}
+              rows={4}
+            />
+
+            <Rule />
+
+            <FormField
+              n="03"
+              label="How would you explain it?"
+              hint="To a smart friend, in plain words. Analogies welcome. Jargon is a debt."
+              value={application}
+              onChange={setApplication}
+              rows={4}
+            />
+          </div>
         </div>
-        <input
-          type="text"
-          aria-label="source url"
-          value={sourceUrl}
-          onChange={e => setSourceUrl(e.target.value)}
-          placeholder="https://…"
-          className="mt-3 w-full bg-transparent border-0 border-b outline-none font-mono text-[13px] caret-accent pb-2"
-          style={{ color: 'var(--text)', borderColor: 'var(--rule)' }}
-        />
-      </div>
 
-      {error && (
-        <p className="px-5 pt-4 font-mono text-[11px] text-accent" role="alert">
-          {error}
-        </p>
-      )}
+        {/* RIGHT: meta rail (on desktop) / below form (on mobile) */}
+        <div className="md:border-l md:border-rule md:overflow-y-auto md:thinbar md:flex md:flex-col md:px-7 md:py-7">
 
-      <div className="px-5 pt-8 flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="font-mono text-[12px] uppercase tracking-[0.14em] px-4 py-3 bg-accent text-ink disabled:opacity-50"
-        >
-          {isSubmitting ? 'Saving…' : submitLabel}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="font-mono text-[12px] uppercase tracking-[0.14em] px-4 py-3 border text-muted"
-          style={{ borderColor: 'var(--rule)' }}
-        >
-          Discard
-        </button>
+          {/* tag */}
+          <div className="px-5 md:px-0 py-5 md:py-0">
+            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Tag</div>
+            {existingTags.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {existingTags.map(t => (
+                  <button type="button" key={t} onClick={() => setTag(t)}>
+                    <Chip active={tag === t}>{t}</Chip>
+                  </button>
+                ))}
+              </div>
+            )}
+            <input
+              type="text"
+              aria-label="tag"
+              value={tag}
+              onChange={e => setTag(e.target.value)}
+              placeholder="Enter a tag…"
+              className="mt-3 w-full bg-transparent border-0 border-b outline-none font-mono text-[13px] caret-accent pb-2"
+              style={{ color: 'var(--text)', borderColor: 'var(--rule)' }}
+            />
+          </div>
+
+          {/* source url */}
+          <div className="px-5 md:px-0 py-5 md:py-0 md:mt-8">
+            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+              Source URL <span className="text-dim">(optional)</span>
+            </div>
+            <input
+              type="text"
+              aria-label="source url"
+              value={sourceUrl}
+              onChange={e => setSourceUrl(e.target.value)}
+              placeholder="https://…"
+              className="mt-3 w-full bg-transparent border-0 border-b outline-none font-mono text-[13px] caret-accent pb-2"
+              style={{ color: 'var(--text)', borderColor: 'var(--rule)' }}
+            />
+          </div>
+
+          <div className="md:flex-1" />
+
+          {error && (
+            <p className="px-5 md:px-0 pt-4 font-mono text-[11px] text-accent" role="alert">
+              {error}
+            </p>
+          )}
+
+          {/* actions */}
+          <div className="px-5 md:px-0 pt-8 md:pt-0 pb-8 md:pb-0 flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="font-mono text-[12px] uppercase tracking-[0.14em] px-4 py-3 bg-accent text-ink disabled:opacity-50"
+            >
+              {isSubmitting ? 'Saving…' : submitLabel}
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="font-mono text-[12px] uppercase tracking-[0.14em] px-4 py-3 border text-muted"
+              style={{ borderColor: 'var(--rule)' }}
+            >
+              Discard
+            </button>
+          </div>
+
+          <div className="hidden md:block mt-2 font-mono text-[10px] text-dim text-center">⌘↵ to save</div>
+        </div>
       </div>
     </form>
   )
