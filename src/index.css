@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink:        #0E0C09;
+  --ink-2:      #161310;
+  --ink-3:      #1C1814;
+  --rule:       #26211B;
+  --rule-2:     #332D25;
+  --text:       #E8E2D1;
+  --muted:      #857C6E;
+  --dim:        #4D4740;
+  --accent:     #E2602B;
+  --accent-dim: #8a3a18;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--ink);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+textarea,
+input {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: var(--dim);
+}
+
+.noscrollbar::-webkit-scrollbar { display: none; }
+.noscrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.dashed-rule {
+  background-image: linear-gradient(to right, var(--rule) 50%, transparent 50%);
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+  background-position: 0 50%;
+  height: 1px;
+  width: 100%;
+}
