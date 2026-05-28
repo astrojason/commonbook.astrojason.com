@@ -7,6 +7,7 @@ import { incrementStats } from '../lib/stats'
 import { computeSM2 } from '../lib/sm2'
 import { Rule } from '../components/Rule'
 import { StrengthBar } from '../components/StrengthBar'
+import { MarkdownBody } from '../components/MarkdownBody'
 import type { Note } from '../types'
 
 const TIERS = ['cold', 'cool', 'warm', 'hot', 'solid'] as const
@@ -195,9 +196,9 @@ export default function NoteDetail() {
                       {s.label}
                     </span>
                   </div>
-                  <p className="mt-3 md:mt-4 font-mono text-[14px] md:text-[16px] leading-[1.7] md:leading-[1.75]">
-                    {s.body}
-                  </p>
+                  <div className="mt-3 md:mt-4">
+                    <MarkdownBody>{s.body}</MarkdownBody>
+                  </div>
                 </div>
                 {i < 2 && <Rule dashed />}
               </div>

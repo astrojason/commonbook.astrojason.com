@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react'
 import { Rule } from './Rule'
 import { Chip } from './Chip'
+import { MarkdownBody } from './MarkdownBody'
 import type { CreateNoteInput } from '../types'
 
 interface CaptureFormProps {
@@ -22,23 +23,41 @@ function FormField({
   onChange: (v: string) => void
   rows?: number
 }) {
+  const [preview, setPreview] = useState(false)
+
   return (
     <div className="px-5 md:px-0 py-5 md:py-7">
       <div className="flex items-baseline gap-3">
         <span className="font-mono text-[10px] md:text-[11px] text-dim">{n}</span>
         <span className="font-mono text-[11px] md:text-[12px] uppercase tracking-[0.18em] text-accent">{label}</span>
         <span className="hidden md:inline font-mono text-[11px] text-muted">— {hint}</span>
+        <button
+          type="button"
+          onClick={() => setPreview(p => !p)}
+          className="ml-auto font-mono text-[10px] uppercase tracking-[0.14em]"
+          style={{ color: preview ? 'var(--accent)' : 'var(--dim)' }}
+        >
+          {preview ? 'edit' : 'preview'}
+        </button>
       </div>
       <p className="mt-1 md:hidden font-mono text-[11px] text-muted leading-relaxed">{hint}</p>
-      <textarea
-        aria-label={label}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        rows={rows}
-        placeholder="—"
-        className="mt-3 md:mt-4 w-full bg-transparent border-0 outline-none resize-none font-mono text-[14px] md:text-[16px] leading-relaxed caret-accent"
-        style={{ color: 'var(--text)' }}
-      />
+      {preview ? (
+        <div className="mt-3 md:mt-4 min-h-[calc(var(--rows,3)*1.7*14px)]">
+          {value.trim()
+            ? <MarkdownBody>{value}</MarkdownBody>
+            : <span className="font-mono text-[14px] text-dim">—</span>}
+        </div>
+      ) : (
+        <textarea
+          aria-label={label}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          rows={rows}
+          placeholder="—"
+          className="mt-3 md:mt-4 w-full bg-transparent border-0 outline-none resize-none font-mono text-[14px] md:text-[16px] leading-relaxed caret-accent"
+          style={{ color: 'var(--text)' }}
+        />
+      )}
       <div className="dashed-rule mt-2" />
       <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-dim">
         <span>{value.length} ch</span>
