@@ -125,7 +125,7 @@ export default function NoteDetail() {
     <div className="pt-6 pb-32 md:pt-0 md:pb-0 md:h-full md:flex md:flex-col">
 
       {/* breadcrumb + title */}
-      <div className="px-5 md:px-10 md:pt-6 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+      <div className="px-5 md:px-10 md:pt-6 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
         <button onClick={() => navigate(-1)} className="hover:text-muted">← back</button>
         <span>·</span>
         <span>{note.tag}</span>
@@ -160,21 +160,21 @@ export default function NoteDetail() {
                   ['Reviews', `${note.session_count} · next ${formatNextReview(note.next_review_at)}`],
                 ].map(([k, v]) => (
                   <div key={k}>
-                    <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">{k}</div>
-                    <div className="font-mono text-[12px] text-muted mt-1">{v}</div>
+                    <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">{k}</div>
+                    <div className="font-mono text-[13px] text-muted mt-1">{v}</div>
                   </div>
                 ))}
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">Strength</div>
+                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">Strength</div>
                   <div className="mt-1">
                     {note.last_rating != null
                       ? <StrengthBar value={note.last_rating} />
-                      : <span className="font-mono text-[12px] text-dim">—</span>}
+                      : <span className="font-mono text-[13px] text-dim">—</span>}
                   </div>
                 </div>
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">Status</div>
-                  <div className="font-mono text-[12px] mt-1" style={{ color: due ? 'var(--accent)' : 'var(--muted)' }}>
+                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">Status</div>
+                  <div className="font-mono text-[13px] mt-1" style={{ color: due ? 'var(--accent)' : 'var(--muted)' }}>
                     {due ? 'due today' : 'upcoming'}
                   </div>
                 </div>
@@ -191,8 +191,8 @@ export default function NoteDetail() {
               <div key={s.n}>
                 <div className="px-5 md:px-10 py-5 md:py-7">
                   <div className="flex items-baseline gap-3">
-                    <span className="font-mono text-[10px] md:text-[11px] text-dim">{s.n}</span>
-                    <span className="font-mono text-[11px] md:text-[12px] uppercase tracking-[0.18em]" style={{ color: 'var(--accent)' }}>
+                    <span className="font-mono text-[11px] md:text-[12px] text-dim">{s.n}</span>
+                    <span className="font-mono text-[12px] md:text-[13px] uppercase tracking-[0.18em]" style={{ color: 'var(--accent)' }}>
                       {s.label}
                     </span>
                   </div>
@@ -209,7 +209,7 @@ export default function NoteDetail() {
             {note.source_url && (
               <>
                 <div className="px-5 md:px-10 py-5">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Source</div>
+                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">Source</div>
                   <a
                     href={note.source_url}
                     target="_blank"
@@ -229,13 +229,13 @@ export default function NoteDetail() {
               <button
                 onClick={handleStartSession}
                 disabled={startingSession}
-                className="flex-1 md:flex-none font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-3 border border-accent text-accent hover:bg-ink-2 disabled:opacity-50"
+                className="flex-1 md:flex-none font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-accent text-accent hover:bg-ink-2 disabled:opacity-50"
               >
                 {startingSession ? 'opening…' : '→ start session'}
               </button>
               <button
                 onClick={() => navigate(`/capture?edit=${id}`)}
-                className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-3 border border-rule text-muted hover:border-rule-2"
+                className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-rule text-muted hover:border-rule-2"
               >
                 edit
               </button>
@@ -243,13 +243,13 @@ export default function NoteDetail() {
                 <>
                   <button
                     onClick={handleDelete}
-                    className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-3 border border-accent text-accent"
+                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-accent text-accent"
                   >
                     confirm
                   </button>
                   <button
                     onClick={() => setConfirmingDelete(false)}
-                    className="font-mono text-[11px] uppercase tracking-[0.14em] px-2 py-3 text-dim"
+                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-2 py-3 text-dim"
                   >
                     cancel
                   </button>
@@ -257,7 +257,7 @@ export default function NoteDetail() {
               ) : (
                 <button
                   onClick={() => setConfirmingDelete(true)}
-                  className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-3 border border-rule text-dim hover:border-rule-2"
+                  className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-rule text-dim hover:border-rule-2"
                 >
                   delete
                 </button>
@@ -281,20 +281,20 @@ export default function NoteDetail() {
                 ['Reviews', `${note.session_count} · next ${formatNextReview(note.next_review_at)}`],
               ].map(([k, v]) => (
                 <div key={k}>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">{k}</div>
+                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">{k}</div>
                   <div className="font-mono text-[13px] text-muted mt-1">{v}</div>
                 </div>
               ))}
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">Strength</div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">Strength</div>
                 <div className="mt-2">
                   {note.last_rating != null
                     ? <StrengthBar value={note.last_rating} />
-                    : <span className="font-mono text-[12px] text-dim">—</span>}
+                    : <span className="font-mono text-[13px] text-dim">—</span>}
                 </div>
               </div>
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">Status</div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">Status</div>
                 <div className="font-mono text-[13px] mt-1" style={{ color: due ? 'var(--accent)' : 'var(--muted)' }}>
                   {due ? 'due today' : 'upcoming'}
                 </div>
@@ -306,17 +306,17 @@ export default function NoteDetail() {
           {/* Rating — single DOM node, responsive styling for both mobile and desktop */}
           <div className="px-5 md:px-7 py-6 bg-ink-2 md:flex-1">
             <div className="flex items-baseline justify-between">
-              <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+              <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
                 How well do you remember?
               </div>
-              <div className="font-mono text-[10px] text-dim">1—5</div>
+              <div className="font-mono text-[11px] text-dim">1—5</div>
             </div>
-            <div className="mt-1 font-mono text-[11px] text-dim leading-relaxed">
+            <div className="mt-1 font-mono text-[12px] text-dim leading-relaxed">
               Be honest. The schedule depends on it.
             </div>
 
             {!sessionComplete && (
-              <div className="mt-4 font-mono text-[11px] text-dim" data-testid="rating-locked">
+              <div className="mt-4 font-mono text-[12px] text-dim" data-testid="rating-locked">
                 Complete a session to unlock self-rating.
               </div>
             )}
@@ -344,15 +344,15 @@ export default function NoteDetail() {
                         }}
                       >
                         <div className="md:flex md:items-center md:gap-3">
-                          <div className="font-mono text-[10px] text-dim">{v}</div>
+                          <div className="font-mono text-[11px] text-dim">{v}</div>
                           <div
-                            className="font-mono text-[11px] md:text-[13px] uppercase tracking-wider mt-1 md:mt-0"
+                            className="font-mono text-[12px] md:text-[13px] uppercase tracking-wider mt-1 md:mt-0"
                             style={{ color: active ? 'var(--accent)' : 'var(--muted)' }}
                           >
                             {label}
                           </div>
                         </div>
-                        <span className="hidden md:inline font-mono text-[10px] text-dim">
+                        <span className="hidden md:inline font-mono text-[11px] text-dim">
                           {INTERVAL_LABELS[i]}
                         </span>
                       </button>
@@ -361,7 +361,7 @@ export default function NoteDetail() {
                 </div>
 
                 <div className="mt-5 flex items-center justify-between">
-                  <div className="font-mono text-[11px] text-muted">
+                  <div className="font-mono text-[12px] text-muted">
                     {rating != null
                       ? (
                         <>
@@ -376,7 +376,7 @@ export default function NoteDetail() {
                   <button
                     disabled={rating === null || submitting}
                     onClick={handleRatingSubmit}
-                    className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-2 border disabled:border-rule disabled:text-dim"
+                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-2 border disabled:border-rule disabled:text-dim"
                     style={{ borderColor: rating != null ? 'var(--accent)' : undefined, color: rating != null ? 'var(--accent)' : undefined }}
                   >
                     {submitting ? 'saving…' : 'Log review →'}

@@ -15,6 +15,10 @@
   --accent-dim: #8a3a18;
 }
 
+html {
+  font-size: 18px;
+}
+
 *,
 *::before,
 *::after {

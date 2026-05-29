@@ -96,7 +96,7 @@ export default function Dashboard() {
       */}
       <div className="px-5 md:px-10 md:pt-8 md:pb-6 md:flex md:items-end md:justify-between">
         <div>
-          <div className="hidden md:block font-mono text-[10px] uppercase tracking-[0.22em] text-dim">
+          <div className="hidden md:block font-mono text-[11px] uppercase tracking-[0.22em] text-dim">
             {today}
           </div>
           <h1 className="font-sans text-[26px] md:text-[28px] leading-[1.15] md:leading-none font-light tracking-tight md:mt-2">
@@ -109,7 +109,7 @@ export default function Dashboard() {
                 </>
               )}
           </h1>
-          <p className="mt-2 md:hidden font-mono text-[12px] text-muted leading-relaxed">
+          <p className="mt-2 md:hidden font-mono text-[13px] text-muted leading-relaxed">
             {dueNotes.length > 0 && 'Sit with them before they cool. A session takes about eight minutes.'}
           </p>
         </div>
@@ -118,7 +118,7 @@ export default function Dashboard() {
           <button
             onClick={() => beginSession(mostOverdue.id)}
             disabled={starting}
-            className="mt-5 md:mt-0 inline-flex items-center gap-3 font-mono text-[12px] uppercase tracking-[0.14em] px-4 py-3 border border-accent text-ink bg-accent disabled:opacity-70"
+            className="mt-5 md:mt-0 inline-flex items-center gap-3 font-mono text-[13px] uppercase tracking-[0.14em] px-4 py-3 border border-accent text-ink bg-accent disabled:opacity-70"
           >
             <span>Begin session</span>
             <span className="opacity-70">→</span>
@@ -136,10 +136,10 @@ export default function Dashboard() {
           {dueNotes.length > 0 && (
             <>
               <div className="mt-10 md:mt-0 px-5 md:px-10 pt-0 md:pt-6 pb-3 flex items-baseline justify-between">
-                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+                <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
                   Due · {pad2(dueNotes.length)}
                 </div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+                <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
                   strength · age
                 </div>
               </div>
@@ -157,9 +157,9 @@ export default function Dashboard() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-3">
                               <Tag>{n.tag}</Tag>
-                              <span className="font-mono text-[10px] text-dim">·</span>
+                              <span className="font-mono text-[11px] text-dim">·</span>
                               <span
-                                className="font-mono text-[10px] uppercase tracking-wider"
+                                className="font-mono text-[11px] uppercase tracking-wider"
                                 style={{ color: od > 0 ? 'var(--accent)' : 'var(--muted)' }}
                               >
                                 {od === 0 ? 'due today' : `${od}d overdue`}
@@ -168,7 +168,7 @@ export default function Dashboard() {
                             <div className="mt-2 font-sans text-[15px] md:text-[18px] leading-snug">
                               {n.title}
                             </div>
-                            <div className="mt-1 md:mt-2 font-mono text-[11px] md:text-[12px] text-muted truncate md:whitespace-normal md:max-w-[46ch] md:leading-relaxed">
+                            <div className="mt-1 md:mt-2 font-mono text-[12px] md:text-[13px] text-muted truncate md:whitespace-normal md:max-w-[46ch] md:leading-relaxed">
                               {n.what_it_said}
                             </div>
                           </div>
@@ -176,7 +176,7 @@ export default function Dashboard() {
                             {n.last_rating != null && (
                               <StrengthBar value={n.last_rating} showLabel={false} />
                             )}
-                            <span className="hidden md:block font-mono text-[11px] text-dim opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="hidden md:block font-mono text-[12px] text-dim opacity-0 group-hover:opacity-100 transition-opacity">
                               review →
                             </span>
                           </div>
@@ -197,10 +197,10 @@ export default function Dashboard() {
           {recentNotes.length > 0 && (
             <>
               <div className="mt-10 md:mt-0 px-5 md:px-8 pt-0 md:pt-6 pb-3 flex items-baseline justify-between">
-                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Recent</div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">Recent</div>
                 <button
                   onClick={() => navigate('/library')}
-                  className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim hover:text-muted"
+                  className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim hover:text-muted"
                 >
                   all →
                 </button>
@@ -218,8 +218,8 @@ export default function Dashboard() {
                           <div className="font-sans text-[14px] truncate">{n.title}</div>
                           <div className="mt-[2px] md:mt-1 flex items-center gap-3">
                             <Tag>{n.tag}</Tag>
-                            <span className="font-mono text-[10px] text-dim">·</span>
-                            <span className="font-mono text-[10px] text-dim">
+                            <span className="font-mono text-[11px] text-dim">·</span>
+                            <span className="font-mono text-[11px] text-dim">
                               {ageLabel(n.created_at)}
                             </span>
                           </div>
@@ -239,35 +239,35 @@ export default function Dashboard() {
 
           {/* stats */}
           <div className="mt-8 md:mt-0 px-5 md:px-8 py-0 md:py-7">
-            <div className="hidden md:block font-mono text-[10px] uppercase tracking-[0.18em] text-muted mb-4">
+            <div className="hidden md:block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-4">
               Totals
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">notes</div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">notes</div>
                 <div className="mt-1 flex items-baseline gap-1">
                   <span className="font-mono text-[22px] md:text-[26px] font-light">
                     {stats?.total_notes ?? '—'}
                   </span>
-                  <span className="font-mono text-[10px] text-muted">total</span>
+                  <span className="font-mono text-[11px] text-muted">total</span>
                 </div>
               </div>
               {recallPct !== null && (
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">recall</div>
+                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">recall</div>
                   <div className="mt-1 flex items-baseline gap-1">
                     <span className="font-mono text-[22px] md:text-[26px] font-light">{recallPct}</span>
-                    <span className="font-mono text-[10px] text-muted">percent</span>
+                    <span className="font-mono text-[11px] text-muted">percent</span>
                   </div>
                 </div>
               )}
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">sessions</div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">sessions</div>
                 <div className="mt-1 flex items-baseline gap-1">
                   <span className="font-mono text-[22px] md:text-[26px] font-light">
                     {stats?.total_sessions ?? '—'}
                   </span>
-                  <span className="font-mono text-[10px] text-muted">total</span>
+                  <span className="font-mono text-[11px] text-muted">total</span>
                 </div>
               </div>
             </div>
@@ -280,7 +280,7 @@ export default function Dashboard() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-ink-2 border border-rule px-4 py-3 font-mono text-[12px] text-muted max-w-[320px] text-center"
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-ink-2 border border-rule px-4 py-3 font-mono text-[13px] text-muted max-w-[320px] text-center"
         >
           {toast}
         </div>

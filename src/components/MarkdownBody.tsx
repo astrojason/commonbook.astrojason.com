@@ -56,11 +56,11 @@ export function MarkdownBody({ children }: { children: string }) {
         ),
         table: ({ children }) => (
           <div className="my-3 overflow-x-auto">
-            <table className="font-mono text-[12px] border-collapse w-full" style={{ borderColor: 'var(--rule)' }}>{children}</table>
+            <table className="font-mono text-[13px] border-collapse w-full" style={{ borderColor: 'var(--rule)' }}>{children}</table>
           </div>
         ),
         th: ({ children }) => (
-          <th className="px-3 py-2 text-left border font-mono text-[10px] uppercase tracking-[0.12em]" style={{ borderColor: 'var(--rule)', color: 'var(--muted)', background: 'var(--ink-2)' }}>{children}</th>
+          <th className="px-3 py-2 text-left border font-mono text-[11px] uppercase tracking-[0.12em]" style={{ borderColor: 'var(--rule)', color: 'var(--muted)', background: 'var(--ink-2)' }}>{children}</th>
         ),
         td: ({ children }) => (
           <td className="px-3 py-2 border" style={{ borderColor: 'var(--rule)', color: 'var(--text)' }}>{children}</td>

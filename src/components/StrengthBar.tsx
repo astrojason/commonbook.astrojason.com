@@ -22,7 +22,7 @@ export function StrengthBar({ value, size = 'sm', showLabel = true }: StrengthBa
         ))}
       </div>
       {showLabel && (
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
+        <span className="font-mono text-[11px] uppercase tracking-wider text-muted">
           {TIERS[value - 1]}
         </span>
       )}

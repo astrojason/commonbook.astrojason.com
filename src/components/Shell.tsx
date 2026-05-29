@@ -43,7 +43,7 @@ export function Shell() {
     <div className="flex flex-col h-dvh bg-ink max-w-[390px] mx-auto md:flex-row md:max-w-none md:mx-0">
 
       {/* ── MOBILE: status bar ── */}
-      <div className="md:hidden shrink-0 px-5 pt-3 pb-1 flex items-center justify-between font-mono text-[10px] text-muted">
+      <div className="md:hidden shrink-0 px-5 pt-3 pb-1 flex items-center justify-between font-mono text-[11px] text-muted">
         <span className="invisible select-none">00:00</span>
         <div className="flex items-center gap-2">
           <span>●●●</span>
@@ -57,11 +57,11 @@ export function Shell() {
         <div className="flex items-baseline gap-2">
           <span className="font-mono text-[13px] tracking-[0.2em] uppercase font-medium">recall</span>
           <span className="font-mono text-[13px] text-accent">/</span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
             {currentNav?.label ?? ''}
           </span>
         </div>
-        <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+        <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
           <span>{initials}</span>
           <span className="inline-block w-[14px] h-[14px] border border-rule-2" />
         </div>
@@ -80,7 +80,7 @@ export function Shell() {
             <span className="font-mono text-[15px] tracking-[0.2em] uppercase font-medium">recall</span>
             <span className="font-mono text-[15px] text-accent">/</span>
           </div>
-          <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">knowledge retention</div>
+          <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.18em] text-dim">knowledge retention</div>
         </div>
 
         <Rule />
@@ -102,7 +102,7 @@ export function Shell() {
                 >
                   {item.desktopLabel}
                 </span>
-                <span className="ml-auto font-mono text-[10px] text-dim">{item.key}</span>
+                <span className="ml-auto font-mono text-[11px] text-dim">{item.key}</span>
               </button>
             )
           })}
@@ -115,12 +115,12 @@ export function Shell() {
           onClick={() => navigate('/')}
           className="mx-5 mt-5 px-4 py-3 border border-rule hover:border-accent text-left transition-colors group"
         >
-          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">due now</div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">due now</div>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="font-mono text-[24px] font-light text-accent">{pad2(dueCount)}</span>
-            <span className="font-mono text-[10px] text-muted">notes</span>
+            <span className="font-mono text-[11px] text-muted">notes</span>
           </div>
-          <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted group-hover:text-accent transition-colors">
+          <div className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted group-hover:text-accent transition-colors">
             begin session →
           </div>
         </button>
@@ -131,12 +131,12 @@ export function Shell() {
 
         {/* user footer */}
         <div className="px-5 py-4 flex items-center gap-3">
-          <span className="w-7 h-7 border border-rule-2 grid place-items-center font-mono text-[11px] text-muted shrink-0">
+          <span className="w-7 h-7 border border-rule-2 grid place-items-center font-mono text-[12px] text-muted shrink-0">
             {initials}
           </span>
           <div className="min-w-0">
-            <div className="font-mono text-[11px] truncate">{user?.displayName ?? '—'}</div>
-            <div className="font-mono text-[10px] text-dim">—</div>
+            <div className="font-mono text-[12px] truncate">{user?.displayName ?? '—'}</div>
+            <div className="font-mono text-[11px] text-dim">—</div>
           </div>
         </div>
       </aside>
@@ -149,7 +149,7 @@ export function Shell() {
 
       {/* ── MOBILE: bottom nav ── */}
       <div className="md:hidden shrink-0 bg-ink border-t border-rule">
-        <div className="px-5 py-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.18em]">
+        <div className="px-5 py-3 flex items-center justify-between font-mono text-[12px] uppercase tracking-[0.18em]">
           {NAV.map(item => {
             const isActive = item.active(location.pathname)
             return (

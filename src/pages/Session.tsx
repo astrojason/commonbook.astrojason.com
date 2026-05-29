@@ -196,22 +196,22 @@ export default function SessionPage() {
       <div className="px-5 md:px-10 md:pt-6 md:pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="inline-block w-[8px] h-[8px] bg-accent" />
-          <span className="font-mono text-[11px] md:text-[12px] uppercase tracking-[0.18em]">
+          <span className="font-mono text-[12px] md:text-[13px] uppercase tracking-[0.18em]">
             Session · {shortId}
           </span>
-          <span className="hidden md:inline font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+          <span className="hidden md:inline font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
             {note.tag}
           </span>
         </div>
         <button
           onClick={() => navigate(`/note/${note.id}`)}
-          className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted hover:text-[color:var(--text)]"
+          className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted hover:text-[color:var(--text)]"
         >
           end session ✕
         </button>
       </div>
 
-      <div className="md:hidden px-5 mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+      <div className="md:hidden px-5 mt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
         {note.tag} · {note.title}
       </div>
 
@@ -220,20 +220,20 @@ export default function SessionPage() {
       {/* token gate */}
       {tokenGate && (
         <div className="px-5 py-6 bg-ink-2 mx-5 mt-5 border border-rule-2">
-          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">High usage</div>
+          <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-muted">High usage</div>
           <div className="mt-2 font-mono text-[13px]">
             You've used {Math.round(tokenGateCount / 1000)}k tokens today. Continue anyway?
           </div>
           <div className="mt-4 flex gap-3">
             <button
               onClick={() => setTokenGate(false)}
-              className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent"
+              className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent"
             >
               Continue →
             </button>
             <button
               onClick={() => navigate(`/note/${note.id}`)}
-              className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-2 border border-rule text-muted"
+              className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-2 border border-rule text-muted"
             >
               Cancel
             </button>
@@ -257,7 +257,7 @@ export default function SessionPage() {
                 {messages.map((m, i) => (
                   <div key={i}>
                     <div
-                      className="font-mono text-[11px] uppercase tracking-[0.18em]"
+                      className="font-mono text-[12px] uppercase tracking-[0.18em]"
                       style={{ color: m.role === 'user' ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}
                     >
                       {m.role === 'user' ? '> me' : 'recall'}
@@ -268,7 +268,7 @@ export default function SessionPage() {
 
                 {streaming && (
                   <div>
-                    <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted" style={{ fontWeight: 500 }}>
+                    <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-muted" style={{ fontWeight: 500 }}>
                       recall
                     </div>
                     <div className="mt-[2px]">
@@ -282,7 +282,7 @@ export default function SessionPage() {
                 )}
 
                 {done && (
-                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
+                  <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-dim">
                     — session complete —
                   </div>
                 )}
@@ -294,11 +294,11 @@ export default function SessionPage() {
             {/* inline error + retry */}
             {error && (
               <div className="px-5 md:px-10 pb-3 flex items-center gap-3">
-                <span className="font-mono text-[12px] text-accent">{error}</span>
+                <span className="font-mono text-[13px] text-accent">{error}</span>
                 {retryMessage && (
                   <button
                     onClick={() => handleSend(retryMessage)}
-                    className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent"
+                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent"
                   >
                     retry →
                   </button>
@@ -326,7 +326,7 @@ export default function SessionPage() {
                   </div>
                 </div>
                 <div className="px-5 md:px-10 pb-4 flex items-center justify-between md:max-w-[760px]">
-                  <div className="flex gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+                  <div className="flex gap-3 font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
                     <button type="button" className="hover:text-muted">skip</button>
                     <span>·</span>
                     <button type="button" className="hover:text-muted">hint</button>
@@ -334,7 +334,7 @@ export default function SessionPage() {
                   <button
                     onClick={() => handleSend()}
                     disabled={streaming || !input.trim()}
-                    className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent disabled:border-rule disabled:text-dim"
+                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent disabled:border-rule disabled:text-dim"
                   >
                     {streaming ? '…' : 'send ↵'}
                   </button>
@@ -345,14 +345,14 @@ export default function SessionPage() {
 
           {/* RIGHT: context rail — desktop only */}
           <div className="hidden md:flex md:flex-col md:overflow-y-auto md:thinbar md:px-7 md:py-7">
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Note in focus</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">Note in focus</div>
             <div className="mt-2 font-sans text-[14px] leading-snug">{note.title}</div>
-            <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">{note.tag}</div>
+            <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{note.tag}</div>
 
             <div className="mt-8"><Rule /></div>
 
-            <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">What</div>
-            <p className="mt-3 font-mono text-[12px] text-muted leading-relaxed">{note.what_it_said}</p>
+            <div className="mt-6 font-mono text-[11px] uppercase tracking-[0.18em] text-muted">What</div>
+            <p className="mt-3 font-mono text-[13px] text-muted leading-relaxed">{note.what_it_said}</p>
           </div>
         </div>
       )}
@@ -362,7 +362,7 @@ export default function SessionPage() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-ink-2 border border-rule px-4 py-3 font-mono text-[12px] text-muted max-w-[320px] text-center"
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-ink-2 border border-rule px-4 py-3 font-mono text-[13px] text-muted max-w-[320px] text-center"
         >
           {toast}
         </div>

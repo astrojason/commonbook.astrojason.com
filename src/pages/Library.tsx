@@ -66,12 +66,12 @@ export default function Library() {
       {/* ── PAGE HEAD ── */}
       <div className="px-5 md:px-10 md:pt-8 md:pb-6 md:flex md:items-end md:justify-between">
         <div>
-          <div className="hidden md:block font-mono text-[10px] uppercase tracking-[0.22em] text-dim">Archive</div>
+          <div className="hidden md:block font-mono text-[11px] uppercase tracking-[0.22em] text-dim">Archive</div>
           <h1 className="font-sans text-[24px] md:text-[28px] font-light tracking-tight md:mt-2 md:leading-none">
             Library
           </h1>
         </div>
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+        <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
           {filtered.length} / {notes.length}
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function Library() {
       <div className="px-5 md:px-10 mt-5 md:mt-0 md:pb-5">
         <div className="flex items-center gap-4 md:gap-6">
           <div className="flex items-center gap-3 border-b border-rule pb-2 flex-1 md:max-w-[420px]">
-            <span className="font-mono text-[12px]" style={{ color: 'var(--accent)' }}>/</span>
+            <span className="font-mono text-[13px]" style={{ color: 'var(--accent)' }}>/</span>
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
@@ -92,13 +92,13 @@ export default function Library() {
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="font-mono text-[10px] text-dim hover:text-muted"
+                className="font-mono text-[11px] text-dim hover:text-muted"
               >
                 clr
               </button>
             )}
           </div>
-          <div className="flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.18em]">
+          <div className="flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.18em]">
             <span className="text-dim">sort</span>
             {(['recent', 'strength', 'tag'] as const).map(s => (
               <button
@@ -124,7 +124,7 @@ export default function Library() {
       <Rule />
 
       {/* desktop column header */}
-      <div className="hidden md:grid md:grid-cols-[1fr_160px_180px] md:gap-4 md:px-10 md:py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+      <div className="hidden md:grid md:grid-cols-[1fr_160px_180px] md:gap-4 md:px-10 md:py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
         <span>title</span>
         <span>updated</span>
         <span>strength</span>
@@ -134,7 +134,7 @@ export default function Library() {
       {/* ── LIST ── */}
       <div className="md:flex-1 md:overflow-y-auto md:thinbar">
         {filtered.length === 0 && (
-          <div className="px-5 md:px-10 py-8 font-mono text-[12px] text-dim">No notes match.</div>
+          <div className="px-5 md:px-10 py-8 font-mono text-[13px] text-dim">No notes match.</div>
         )}
 
         <ul>
@@ -155,11 +155,11 @@ export default function Library() {
                     </div>
                   </div>
                   {/* arrow: mobile only */}
-                  <div className="font-mono text-[10px] text-dim pt-1 md:hidden">→</div>
+                  <div className="font-mono text-[11px] text-dim pt-1 md:hidden">→</div>
                 </div>
 
                 {/* updated: hidden on mobile (no room), visible on desktop as grid col 2 */}
-                <span className="hidden md:block font-mono text-[11px] text-muted uppercase tracking-wider">
+                <span className="hidden md:block font-mono text-[12px] text-muted uppercase tracking-wider">
                   {ageLabel(n.created_at)}
                 </span>
 
@@ -167,7 +167,7 @@ export default function Library() {
                 <div className="hidden md:block">
                   {n.last_rating != null
                     ? <StrengthBar value={n.last_rating} />
-                    : <span className="font-mono text-[11px] text-dim">—</span>}
+                    : <span className="font-mono text-[12px] text-dim">—</span>}
                 </div>
               </button>
               {i < filtered.length - 1 && <Rule dashed />}
@@ -176,7 +176,7 @@ export default function Library() {
         </ul>
 
         {filtered.length > 0 && <Rule />}
-        <div className="px-5 md:px-10 py-6 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+        <div className="px-5 md:px-10 py-6 font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
           {notes.length} notes archived
         </div>
       </div>

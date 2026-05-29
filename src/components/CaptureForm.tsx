@@ -28,19 +28,19 @@ function FormField({
   return (
     <div className="px-5 md:px-0 py-5 md:py-7">
       <div className="flex items-baseline gap-3">
-        <span className="font-mono text-[10px] md:text-[11px] text-dim">{n}</span>
-        <span className="font-mono text-[11px] md:text-[12px] uppercase tracking-[0.18em] text-accent">{label}</span>
-        <span className="hidden md:inline font-mono text-[11px] text-muted">— {hint}</span>
+        <span className="font-mono text-[11px] md:text-[12px] text-dim">{n}</span>
+        <span className="font-mono text-[12px] md:text-[13px] uppercase tracking-[0.18em] text-accent">{label}</span>
+        <span className="hidden md:inline font-mono text-[12px] text-muted">— {hint}</span>
         <button
           type="button"
           onClick={() => setPreview(p => !p)}
-          className="ml-auto font-mono text-[10px] uppercase tracking-[0.14em]"
+          className="ml-auto font-mono text-[11px] uppercase tracking-[0.14em]"
           style={{ color: preview ? 'var(--accent)' : 'var(--dim)' }}
         >
           {preview ? 'edit' : 'preview'}
         </button>
       </div>
-      <p className="mt-1 md:hidden font-mono text-[11px] text-muted leading-relaxed">{hint}</p>
+      <p className="mt-1 md:hidden font-mono text-[12px] text-muted leading-relaxed">{hint}</p>
       {preview ? (
         <div className="mt-3 md:mt-4 min-h-[calc(var(--rows,3)*1.7*14px)]">
           {value.trim()
@@ -59,7 +59,7 @@ function FormField({
         />
       )}
       <div className="dashed-rule mt-2" />
-      <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-dim">
+      <div className="mt-2 flex items-center justify-between font-mono text-[11px] text-dim">
         <span>{value.length} ch</span>
         <span>{value.trim() ? '●' : '○'}</span>
       </div>
@@ -107,7 +107,7 @@ export function CaptureForm({
 
       {/* ── PAGE HEAD ── */}
       <div className="px-5 md:px-10 md:pt-8 md:pb-6">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+        <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
           {isEdit ? 'Edit entry' : 'New entry'}
         </div>
         <h1 className="mt-2 font-sans text-[24px] md:text-[28px] leading-tight md:leading-none font-light">
@@ -116,7 +116,7 @@ export function CaptureForm({
             : <>Write it down once.</>}
         </h1>
         {!isEdit && (
-          <div className="hidden md:block mt-2 font-mono text-[11px] text-muted max-w-[34ch] leading-relaxed">
+          <div className="hidden md:block mt-2 font-mono text-[12px] text-muted max-w-[34ch] leading-relaxed">
             So you don't forget it <span className="text-accent">twice</span>. Three prompts — answer what you can.
           </div>
         )}
@@ -136,7 +136,7 @@ export function CaptureForm({
           <div className="md:max-w-[680px]">
 
             <div className="px-5 md:px-0 py-5 md:py-7">
-              <div className="font-mono text-[11px] md:text-[12px] uppercase tracking-[0.18em] text-accent">Title</div>
+              <div className="font-mono text-[12px] md:text-[13px] uppercase tracking-[0.18em] text-accent">Title</div>
               <input
                 type="text"
                 aria-label="title"
@@ -189,7 +189,7 @@ export function CaptureForm({
 
           {/* tag */}
           <div className="px-5 md:px-0 py-5 md:py-0">
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Tag</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">Tag</div>
             {existingTags.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
                 {existingTags.map(t => (
@@ -212,7 +212,7 @@ export function CaptureForm({
 
           {/* source url */}
           <div className="px-5 md:px-0 py-5 md:py-0 md:mt-8">
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
               Source URL <span className="text-dim">(optional)</span>
             </div>
             <input
@@ -229,7 +229,7 @@ export function CaptureForm({
           <div className="md:flex-1" />
 
           {error && (
-            <p className="px-5 md:px-0 pt-4 font-mono text-[11px] text-accent" role="alert">
+            <p className="px-5 md:px-0 pt-4 font-mono text-[12px] text-accent" role="alert">
               {error}
             </p>
           )}
@@ -239,21 +239,21 @@ export function CaptureForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="font-mono text-[12px] uppercase tracking-[0.14em] px-4 py-3 bg-accent text-ink disabled:opacity-50"
+              className="font-mono text-[13px] uppercase tracking-[0.14em] px-4 py-3 bg-accent text-ink disabled:opacity-50 whitespace-nowrap"
             >
               {isSubmitting ? 'Saving…' : submitLabel}
             </button>
             <button
               type="button"
               onClick={onCancel}
-              className="font-mono text-[12px] uppercase tracking-[0.14em] px-4 py-3 border text-muted"
+              className="font-mono text-[13px] uppercase tracking-[0.14em] px-4 py-3 border text-muted"
               style={{ borderColor: 'var(--rule)' }}
             >
               Discard
             </button>
           </div>
 
-          <div className="hidden md:block mt-2 font-mono text-[10px] text-dim text-center">⌘↵ to save</div>
+          <div className="hidden md:block mt-2 font-mono text-[11px] text-dim text-center">⌘↵ to save</div>
         </div>
       </div>
     </form>
