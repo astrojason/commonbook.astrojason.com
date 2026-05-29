@@ -239,7 +239,7 @@ export function CaptureForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="font-mono text-[13px] uppercase tracking-[0.14em] px-4 py-3 bg-accent text-ink disabled:opacity-50 whitespace-nowrap"
+              className="font-mono text-[13px] uppercase tracking-[0.14em] px-4 py-3 bg-accent text-ink disabled:opacity-50 whitespace-nowrap shrink-0"
             >
               {isSubmitting ? 'Saving…' : submitLabel}
             </button>
