@@ -26,7 +26,7 @@ export function Shell() {
     return subscribeToNotes(notes => {
       const now = new Date()
       setDueCount(notes.filter(n => n.next_review_at.toDate() <= now).length)
-    })
+    }, () => {})
   }, [])
 
   const currentNav = NAV.find(item => item.active(location.pathname))

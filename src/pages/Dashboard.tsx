@@ -43,9 +43,10 @@ export default function Dashboard() {
   const [starting, setStarting] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [sessionError, setSessionError] = useState<string | null>(null)
+  const [subscribeError, setSubscribeError] = useState<string | null>(null)
 
-  useEffect(() => subscribeToNotes(setNotes), [])
-  useEffect(() => { getStats().then(setStats) }, [])
+  useEffect(() => subscribeToNotes(setNotes, err => setSubscribeError(err.message)), [])
+  useEffect(() => { getStats().then(setStats).catch(err => setSubscribeError(err instanceof Error ? err.message : String(err))) }, [])
   useEffect(() => {
     if (!toast) return
     const t = setTimeout(() => setToast(null), 3000)
@@ -132,9 +133,9 @@ export default function Dashboard() {
 
       <Rule />
 
-      {sessionError && (
+      {(sessionError || subscribeError) && (
         <pre role="alert" className="px-5 md:px-10 py-3 font-mono text-[12px] text-accent whitespace-pre-wrap select-all border-b border-rule">
-          {sessionError}
+          {sessionError || subscribeError}
         </pre>
       )}
 

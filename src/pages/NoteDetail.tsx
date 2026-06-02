@@ -63,10 +63,12 @@ export default function NoteDetail() {
 
   useEffect(() => {
     if (!id) return
-    getNoteById(id).then(n => {
-      setNote(n)
-      setLoading(false)
-    })
+    getNoteById(id)
+      .then(n => { setNote(n); setLoading(false) })
+      .catch(err => {
+        setError(err instanceof Error ? err.message : String(err))
+        setLoading(false)
+      })
   }, [id])
 
   async function handleDelete() {
@@ -126,6 +128,13 @@ export default function NoteDetail() {
   }
 
   if (loading) return null
+  if (error && !note) {
+    return (
+      <pre role="alert" className="px-5 pt-8 font-mono text-[12px] text-accent whitespace-pre-wrap select-all">
+        {error}
+      </pre>
+    )
+  }
   if (!note) {
     return <div className="px-5 pt-8 font-mono text-dim">Note not found.</div>
   }

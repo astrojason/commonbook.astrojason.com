@@ -28,18 +28,23 @@ export default function SessionPage() {
   useEffect(() => {
     if (!sessionId) return
     async function init() {
-      const sess = await getSessionById(sessionId!)
-      if (!sess) { setLoading(false); return }
-      const n = await getNoteById(sess.note_id)
-      setSession(sess)
-      setNote(n)
-      setMessages(sess.messages)
-      setLoading(false)
+      try {
+        const sess = await getSessionById(sessionId!)
+        if (!sess) { setLoading(false); return }
+        const n = await getNoteById(sess.note_id)
+        setSession(sess)
+        setNote(n)
+        setMessages(sess.messages)
+        setLoading(false)
 
-      const used = await getTokensUsed()
-      if (used !== null && used >= DAILY_LIMIT) {
-        setTokenGate(true)
-        setTokenGateCount(used)
+        const used = await getTokensUsed()
+        if (used !== null && used >= DAILY_LIMIT) {
+          setTokenGate(true)
+          setTokenGateCount(used)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err))
+        setLoading(false)
       }
     }
     init()
@@ -182,6 +187,14 @@ export default function SessionPage() {
   }
 
   if (loading) return null
+
+  if (error && (!session || !note)) {
+    return (
+      <pre role="alert" className="px-5 pt-8 font-mono text-[12px] text-accent whitespace-pre-wrap select-all">
+        {error}
+      </pre>
+    )
+  }
 
   if (!session || !note) {
     return <div className="px-5 pt-8 font-mono text-dim">Session not found.</div>

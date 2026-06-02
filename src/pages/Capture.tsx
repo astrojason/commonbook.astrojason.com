@@ -15,26 +15,32 @@ export default function Capture() {
   const [initialValues, setInitialValues] = useState<Partial<CreateNoteInput> | undefined>()
   const [loading, setLoading] = useState(!!editId)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
-    return subscribeToNotes(setNotes)
+    return subscribeToNotes(setNotes, err => setLoadError(err.message))
   }, [])
 
   useEffect(() => {
     if (!editId) return
-    getNoteById(editId).then(note => {
-      if (note) {
-        setInitialValues({
-          title: note.title,
-          tag: note.tag,
-          source_url: note.source_url,
-          what_it_said: note.what_it_said,
-          why_it_matters: note.why_it_matters,
-          application: note.application,
-        })
-      }
-      setLoading(false)
-    })
+    getNoteById(editId)
+      .then(note => {
+        if (note) {
+          setInitialValues({
+            title: note.title,
+            tag: note.tag,
+            source_url: note.source_url,
+            what_it_said: note.what_it_said,
+            why_it_matters: note.why_it_matters,
+            application: note.application,
+          })
+        }
+        setLoading(false)
+      })
+      .catch(err => {
+        setLoadError(err instanceof Error ? err.message : String(err))
+        setLoading(false)
+      })
   }, [editId])
 
   async function handleSubmit(values: CreateNoteInput) {
@@ -54,6 +60,13 @@ export default function Capture() {
   }
 
   if (loading) return null
+  if (loadError) {
+    return (
+      <pre role="alert" className="px-5 pt-8 font-mono text-[12px] text-accent whitespace-pre-wrap select-all">
+        {loadError}
+      </pre>
+    )
+  }
 
   return (
     <CaptureForm

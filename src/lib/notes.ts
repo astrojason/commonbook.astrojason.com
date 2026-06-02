@@ -60,12 +60,17 @@ export async function updateNoteAfterRating(id: string, sm2: SM2Result, rating: 
   })
 }
 
-export function subscribeToNotes(callback: (notes: Note[]) => void): () => void {
+export function subscribeToNotes(
+  callback: (notes: Note[]) => void,
+  onError?: (err: Error) => void,
+): () => void {
   const q = query(
     collection(db, 'notes'),
     where('deleted_at', '==', null),
   )
-  return onSnapshot(q, snapshot => {
-    callback(snapshot.docs.map(d => toNote(d.id, d.data())))
-  })
+  return onSnapshot(
+    q,
+    snapshot => { callback(snapshot.docs.map(d => toNote(d.id, d.data()))) },
+    err => { onError?.(err) },
+  )
 }

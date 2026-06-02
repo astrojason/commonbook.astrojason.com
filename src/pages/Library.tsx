@@ -41,8 +41,9 @@ export default function Library() {
   const [query, setQuery] = useState('')
   const [activeTag, setActiveTag] = useState('all')
   const [sort, setSort] = useState<SortKey>('recent')
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => subscribeToNotes(setNotes), [])
+  useEffect(() => subscribeToNotes(setNotes, err => setError(err.message)), [])
 
   const tags = useMemo(() => {
     const set = new Set(notes.map(n => n.tag))
@@ -122,6 +123,12 @@ export default function Library() {
       </div>
 
       <Rule />
+
+      {error && (
+        <pre role="alert" className="px-5 md:px-10 py-3 font-mono text-[12px] text-accent whitespace-pre-wrap select-all border-b border-rule">
+          {error}
+        </pre>
+      )}
 
       {/* desktop column header */}
       <div className="hidden md:grid md:grid-cols-[1fr_160px_180px] md:gap-4 md:px-10 md:py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
