@@ -56,12 +56,13 @@ export default function Dashboard() {
   const dueNotes = useMemo(() => {
     const now = new Date()
     return notes
-      .filter(n => n.next_review_at.toDate() <= now)
+      .filter(n => n.next_review_at?.toDate() <= now)
       .sort((a, b) => a.next_review_at.toDate().getTime() - b.next_review_at.toDate().getTime())
   }, [notes])
 
   const recentNotes = useMemo(() =>
     [...notes]
+      .filter(n => n.created_at != null)
       .sort((a, b) => b.created_at.toDate().getTime() - a.created_at.toDate().getTime())
       .slice(0, 5),
     [notes],
