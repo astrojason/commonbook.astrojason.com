@@ -244,7 +244,20 @@ describe('Session — mid-stream error', () => {
     await user.click(screen.getByRole('button', { name: /send/i }))
 
     expect(await screen.findByRole('button', { name: /retry/i })).toBeInTheDocument()
-    expect(screen.getByText(/connection interrupted/i)).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(/network error/i)
+  })
+
+  it('re-enables the message input after an error', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network error'))
+
+    const user = userEvent.setup()
+    renderSession()
+
+    await user.type(await screen.findByLabelText('message input'), 'my answer')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+
+    await screen.findByRole('alert')
+    expect(screen.getByLabelText('message input')).not.toBeDisabled()
   })
 
   it('reverts the user message on error', async () => {

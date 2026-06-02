@@ -92,14 +92,18 @@ export function CaptureForm({
       return
     }
     setError(null)
-    await onSubmit({
-      title: title.trim(),
-      tag: tag.trim(),
-      source_url: sourceUrl.trim() || null,
-      what_it_said: whatItSaid.trim(),
-      why_it_matters: whyItMatters.trim(),
-      application: application.trim(),
-    })
+    try {
+      await onSubmit({
+        title: title.trim(),
+        tag: tag.trim(),
+        source_url: sourceUrl.trim() || null,
+        what_it_said: whatItSaid.trim(),
+        why_it_matters: whyItMatters.trim(),
+        application: application.trim(),
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
   }
 
   return (
@@ -229,9 +233,9 @@ export function CaptureForm({
           <div className="md:flex-1" />
 
           {error && (
-            <p className="px-5 md:px-0 pt-4 font-mono text-[12px] text-accent" role="alert">
+            <pre role="alert" className="px-5 md:px-0 pt-4 font-mono text-[12px] text-accent whitespace-pre-wrap select-all">
               {error}
-            </p>
+            </pre>
           )}
 
           {/* actions */}

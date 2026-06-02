@@ -59,6 +59,7 @@ export default function NoteDetail() {
   const [rating, setRating] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [startingSession, setStartingSession] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -70,13 +71,18 @@ export default function NoteDetail() {
 
   async function handleDelete() {
     if (!id) return
-    await softDeleteNote(id)
-    navigate('/')
+    try {
+      await softDeleteNote(id)
+      navigate('/')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
   }
 
   async function handleStartSession() {
     if (!id) return
     setStartingSession(true)
+    setError(null)
     try {
       const existing = await getIncompleteSession(id)
       if (existing) {
@@ -85,6 +91,8 @@ export default function NoteDetail() {
         const newId = await createSession(id)
         navigate(`/session/${newId}`)
       }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setStartingSession(false)
     }
@@ -93,6 +101,7 @@ export default function NoteDetail() {
   async function handleRatingSubmit() {
     if (!note || rating === null || !id) return
     setSubmitting(true)
+    setError(null)
     try {
       const sm2 = computeSM2({
         rating,
@@ -109,6 +118,8 @@ export default function NoteDetail() {
         ...(rating >= 3 ? { passing_sessions: 1 } : {}),
       })
       navigate('/')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setSubmitting(false)
     }
@@ -222,6 +233,12 @@ export default function NoteDetail() {
                 </div>
                 <Rule />
               </>
+            )}
+
+            {error && (
+              <pre role="alert" className="px-5 md:px-10 pt-4 font-mono text-[12px] text-accent whitespace-pre-wrap select-all">
+                {error}
+              </pre>
             )}
 
             {/* actions */}

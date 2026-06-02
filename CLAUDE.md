@@ -44,6 +44,12 @@ A task is not done until:
 
 ---
 
+## Error handling
+
+Nothing is allowed to fail silently. Every async operation that can throw must catch the error and surface it in the UI. The full error message must be displayed in a block that the user can copy (e.g. a `<pre>` or a selectable text node), not just a vague "something went wrong" string.
+
+---
+
 ## Environment Variables
 
 ### Server-side (Vercel only — never `VITE_` prefixed)

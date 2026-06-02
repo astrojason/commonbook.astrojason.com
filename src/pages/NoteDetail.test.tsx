@@ -167,6 +167,59 @@ describe('NoteDetail — delete', () => {
   })
 })
 
+describe('NoteDetail — error handling', () => {
+  it('shows error when softDeleteNote rejects', async () => {
+    vi.mocked(softDeleteNote).mockRejectedValue(new Error('Firestore error'))
+    const user = userEvent.setup()
+    renderNoteDetail()
+    await screen.findByText('Markov chains')
+    await user.click(screen.getByRole('button', { name: /delete/i }))
+    await user.click(screen.getByRole('button', { name: /confirm/i }))
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+  })
+
+  it('shows error when createSession rejects', async () => {
+    vi.mocked(getIncompleteSession).mockResolvedValue(null)
+    vi.mocked(createSession).mockRejectedValue(new Error('Firestore error'))
+    const user = userEvent.setup()
+    renderNoteDetail()
+    await screen.findByText('Markov chains')
+    await user.click(screen.getByRole('button', { name: /start session/i }))
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+  })
+
+  it('shows error when updateNoteAfterRating rejects', async () => {
+    vi.mocked(updateNoteAfterRating).mockRejectedValue(new Error('Firestore error'))
+    const user = userEvent.setup()
+    renderNoteDetail('/note/note-abc', { sessionComplete: true })
+    await screen.findByText('Markov chains')
+    await user.click(screen.getByRole('button', { name: 'warm' }))
+    await user.click(screen.getByRole('button', { name: /log review/i }))
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+  })
+
+  it('re-enables Start Session after an error', async () => {
+    vi.mocked(createSession).mockRejectedValue(new Error('Firestore error'))
+    const user = userEvent.setup()
+    renderNoteDetail()
+    await screen.findByText('Markov chains')
+    await user.click(screen.getByRole('button', { name: /start session/i }))
+    await screen.findByRole('alert')
+    expect(screen.getByRole('button', { name: /start session/i })).not.toBeDisabled()
+  })
+
+  it('re-enables Log review after an error', async () => {
+    vi.mocked(updateNoteAfterRating).mockRejectedValue(new Error('Firestore error'))
+    const user = userEvent.setup()
+    renderNoteDetail('/note/note-abc', { sessionComplete: true })
+    await screen.findByText('Markov chains')
+    await user.click(screen.getByRole('button', { name: 'warm' }))
+    await user.click(screen.getByRole('button', { name: /log review/i }))
+    await screen.findByRole('alert')
+    expect(screen.getByRole('button', { name: /log review/i })).not.toBeDisabled()
+  })
+})
+
 describe('NoteDetail — start session', () => {
   it('resumes an existing incomplete session', async () => {
     const incompleteSession: Session = {

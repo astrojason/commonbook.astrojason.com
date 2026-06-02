@@ -165,11 +165,11 @@ export default function SessionPage() {
           state: { sessionComplete: true, sessionId: session.id },
         })
       }
-    } catch {
+    } catch (err) {
       setMessages(prevMessages)
       setStreamText('')
       setStreaming(false)
-      setError('Connection interrupted.')
+      setError(err instanceof Error ? err.message : String(err))
       setRetryMessage(trimmed)
     }
   }
@@ -293,12 +293,12 @@ export default function SessionPage() {
 
             {/* inline error + retry */}
             {error && (
-              <div className="px-5 md:px-10 pb-3 flex items-center gap-3">
-                <span className="font-mono text-[13px] text-accent">{error}</span>
+              <div className="px-5 md:px-10 pb-3">
+                <pre role="alert" className="font-mono text-[13px] text-accent whitespace-pre-wrap select-all">{error}</pre>
                 {retryMessage && (
                   <button
                     onClick={() => handleSend(retryMessage)}
-                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent"
+                    className="mt-2 font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent"
                   >
                     retry →
                   </button>

@@ -46,6 +46,45 @@ beforeEach(() => {
   vi.mocked(incrementStats).mockResolvedValue(undefined)
 })
 
+async function fillRequiredFields(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByRole('textbox', { name: /title/i }), 'T')
+  await user.type(screen.getByRole('textbox', { name: /what did it say/i }), 'W')
+  await user.type(screen.getByRole('textbox', { name: /why does it matter/i }), 'W')
+  await user.type(screen.getByRole('textbox', { name: /how would you explain/i }), 'H')
+  await user.type(screen.getByRole('textbox', { name: /tag/i }), 't')
+}
+
+describe('Capture — error handling', () => {
+  it('shows error when createNote rejects', async () => {
+    vi.mocked(createNote).mockRejectedValue(new Error('Firestore error'))
+    const user = userEvent.setup()
+    renderCapture()
+    await fillRequiredFields(user)
+    await user.click(screen.getByRole('button', { name: /save entry/i }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(/firestore error/i)
+  })
+
+  it('shows error when updateNote rejects', async () => {
+    vi.mocked(updateNote).mockRejectedValue(new Error('Firestore error'))
+    vi.mocked(getNoteById).mockResolvedValue(mockNote as Note)
+    const user = userEvent.setup()
+    renderCapture('/capture?edit=note-123')
+    await screen.findByDisplayValue('Existing title')
+    await user.click(screen.getByRole('button', { name: /save changes/i }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(/firestore error/i)
+  })
+
+  it('re-enables the submit button after a save error', async () => {
+    vi.mocked(createNote).mockRejectedValue(new Error('Firestore error'))
+    const user = userEvent.setup()
+    renderCapture()
+    await fillRequiredFields(user)
+    await user.click(screen.getByRole('button', { name: /save entry/i }))
+    await screen.findByRole('alert')
+    expect(screen.getByRole('button', { name: /save entry/i })).not.toBeDisabled()
+  })
+})
+
 describe('Capture — create mode', () => {
   it('shows a validation error and does not call createNote when required fields are empty', async () => {
     const user = userEvent.setup()

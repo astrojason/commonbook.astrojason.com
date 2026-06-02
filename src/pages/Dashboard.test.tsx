@@ -208,6 +208,33 @@ describe('Dashboard — recent notes', () => {
   })
 })
 
+describe('Dashboard — beginSession error', () => {
+  it('shows a persistent error with the full message when createSession rejects', async () => {
+    mockSubscribe([makeNote({ id: 'note-abc', next_review_at: mockTs(past) })])
+    vi.mocked(createSession).mockRejectedValue(new Error('Firestore error'))
+
+    const user = userEvent.setup()
+    renderDashboard()
+
+    await user.click(await screen.findByRole('button', { name: /begin session/i }))
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(/firestore error/i)
+  })
+
+  it('re-enables Begin Session after an error', async () => {
+    mockSubscribe([makeNote({ id: 'note-abc', next_review_at: mockTs(past) })])
+    vi.mocked(createSession).mockRejectedValue(new Error('Firestore error'))
+
+    const user = userEvent.setup()
+    renderDashboard()
+
+    await user.click(await screen.findByRole('button', { name: /begin session/i }))
+    await screen.findByRole('alert')
+    expect(screen.getByRole('button', { name: /begin session/i })).not.toBeDisabled()
+  })
+})
+
 describe('Dashboard — offline toast', () => {
   it('shows a toast and does not start a session when offline', async () => {
     mockSubscribe([makeNote({ id: 'note-abc', next_review_at: mockTs(past) })])

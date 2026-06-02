@@ -42,6 +42,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [starting, setStarting] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [sessionError, setSessionError] = useState<string | null>(null)
 
   useEffect(() => subscribeToNotes(setNotes), [])
   useEffect(() => { getStats().then(setStats) }, [])
@@ -76,9 +77,12 @@ export default function Dashboard() {
       return
     }
     setStarting(true)
+    setSessionError(null)
     try {
       const existing = await getIncompleteSession(noteId)
       navigate(existing ? `/session/${existing.id}` : `/session/${await createSession(noteId)}`)
+    } catch (err) {
+      setSessionError(err instanceof Error ? err.message : String(err))
     } finally {
       setStarting(false)
     }
@@ -127,6 +131,12 @@ export default function Dashboard() {
       </div>
 
       <Rule />
+
+      {sessionError && (
+        <pre role="alert" className="px-5 md:px-10 py-3 font-mono text-[12px] text-accent whitespace-pre-wrap select-all border-b border-rule">
+          {sessionError}
+        </pre>
+      )}
 
       {/* ── CONTENT: mobile = stacked cols, desktop = 2-column grid ── */}
       <div className="md:flex-1 md:grid md:grid-cols-[1.55fr_1fr] md:min-h-0">
