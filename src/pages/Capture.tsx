@@ -45,14 +45,21 @@ export default function Capture() {
   }, [editId])
 
   async function handleSubmit(values: CreateNoteInput) {
+    if (!navigator.onLine) {
+      setSaveError('No internet connection — reconnect and try again')
+      return
+    }
     setIsSubmitting(true)
     setSaveError(null)
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Save timed out — Firestore did not respond. Reload the page and try again.')), 12_000)
+    )
     try {
       if (editId) {
-        await updateNote(editId, values)
+        await Promise.race([updateNote(editId, values), timeout])
         navigate(`/note/${editId}`)
       } else {
-        const id = await createNote(values)
+        const id = await Promise.race([createNote(values), timeout])
         incrementStats({ total_notes: 1 }).catch(err => {
           console.error('Stats increment failed:', err)
         })

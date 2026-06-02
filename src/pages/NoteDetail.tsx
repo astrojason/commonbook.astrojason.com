@@ -71,10 +71,16 @@ export default function NoteDetail() {
       })
   }, [id])
 
+  function makeTimeout(ms = 12_000) {
+    return new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Timed out — Firestore did not respond. Reload and try again.')), ms)
+    )
+  }
+
   async function handleDelete() {
     if (!id) return
     try {
-      await softDeleteNote(id)
+      await Promise.race([softDeleteNote(id), makeTimeout()])
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -86,11 +92,11 @@ export default function NoteDetail() {
     setStartingSession(true)
     setError(null)
     try {
-      const existing = await getIncompleteSession(id)
+      const existing = await Promise.race([getIncompleteSession(id), makeTimeout()])
       if (existing) {
         navigate(`/session/${existing.id}`)
       } else {
-        const newId = await createSession(id)
+        const newId = await Promise.race([createSession(id), makeTimeout()])
         navigate(`/session/${newId}`)
       }
     } catch (err) {
@@ -111,14 +117,14 @@ export default function NoteDetail() {
         easinessFactor: note.easiness_factor,
         sessionCount: note.session_count,
       })
-      await updateNoteAfterRating(id, sm2, rating)
+      await Promise.race([updateNoteAfterRating(id, sm2, rating), makeTimeout()])
       if (sessionId) {
-        await updateSession(sessionId, { self_rating: rating })
+        await Promise.race([updateSession(sessionId, { self_rating: rating }), makeTimeout()])
       }
-      await incrementStats({
+      incrementStats({
         total_sessions: 1,
         ...(rating >= 3 ? { passing_sessions: 1 } : {}),
-      })
+      }).catch(err => console.error('Stats increment failed:', err))
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
