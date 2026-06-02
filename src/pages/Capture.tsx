@@ -16,6 +16,7 @@ export default function Capture() {
   const [loading, setLoading] = useState(!!editId)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     return subscribeToNotes(setNotes, err => setLoadError(err.message))
@@ -45,15 +46,21 @@ export default function Capture() {
 
   async function handleSubmit(values: CreateNoteInput) {
     setIsSubmitting(true)
+    setSaveError(null)
     try {
       if (editId) {
         await updateNote(editId, values)
         navigate(`/note/${editId}`)
       } else {
         const id = await createNote(values)
-        await incrementStats({ total_notes: 1 })
+        incrementStats({ total_notes: 1 }).catch(err => {
+          console.error('Stats increment failed:', err)
+        })
         navigate(`/note/${id}`)
       }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setSaveError(msg || 'Save failed — unknown error')
     } finally {
       setIsSubmitting(false)
     }
@@ -69,13 +76,20 @@ export default function Capture() {
   }
 
   return (
-    <CaptureForm
-      initialValues={initialValues}
-      existingTags={getUniqueTags(notes)}
-      onSubmit={handleSubmit}
-      onCancel={() => navigate(-1)}
-      submitLabel={editId ? 'Save changes →' : 'Save entry →'}
-      isSubmitting={isSubmitting}
-    />
+    <>
+      {saveError && (
+        <pre role="alert" className="mx-5 mt-4 font-mono text-[12px] text-accent whitespace-pre-wrap select-all border border-accent px-3 py-2">
+          {saveError}
+        </pre>
+      )}
+      <CaptureForm
+        initialValues={initialValues}
+        existingTags={getUniqueTags(notes)}
+        onSubmit={handleSubmit}
+        onCancel={() => navigate(-1)}
+        submitLabel={editId ? 'Save changes →' : 'Save entry →'}
+        isSubmitting={isSubmitting}
+      />
+    </>
   )
 }
