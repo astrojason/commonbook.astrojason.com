@@ -32,21 +32,6 @@ export default defineConfig({
               expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
             },
           },
-          {
-            urlPattern: /^https:\/\/firestore\.googleapis\.com\//,
-            handler: 'NetworkFirst',
-            options: { cacheName: 'firestore' },
-          },
-          {
-            urlPattern: /^https:\/\/identitytoolkit\.googleapis\.com\//,
-            handler: 'NetworkFirst',
-            options: { cacheName: 'firebase-auth' },
-          },
-          {
-            urlPattern: /\/api\//,
-            handler: 'NetworkFirst',
-            options: { cacheName: 'api-calls' },
-          },
         ],
       },
     }),
