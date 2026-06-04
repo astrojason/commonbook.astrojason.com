@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import type { Timestamp } from 'firebase/firestore'
 import { getNoteById, softDeleteNote, updateNoteAfterRating } from '../lib/notes'
-import { createSession, getIncompleteSession, getSessionById, updateSession } from '../lib/sessions'
+import { createSession, getCompletedSessions, getIncompleteSession, updateSession } from '../lib/sessions'
 import { incrementStats } from '../lib/stats'
 import { computeSM2 } from '../lib/sm2'
 import { Rule } from '../components/Rule'
 import { StrengthBar } from '../components/StrengthBar'
 import { MarkdownBody } from '../components/MarkdownBody'
-import type { Message, Note } from '../types'
+import type { Note, Session } from '../types'
 
 const TIERS = ['cold', 'cool', 'warm', 'hot', 'solid'] as const
 const NEXT_REVIEW_LABELS = ['tomorrow', '+2d', '+5d', '+14d', '+30d']
@@ -61,8 +61,8 @@ export default function NoteDetail() {
   const [submitting, setSubmitting] = useState(false)
   const [startingSession, setStartingSession] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [transcript, setTranscript] = useState<Message[] | null>(null)
-  const [transcriptOpen, setTranscriptOpen] = useState(false)
+  const [completedSessions, setCompletedSessions] = useState<Session[]>([])
+  const [openSessionId, setOpenSessionId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -75,11 +75,11 @@ export default function NoteDetail() {
   }, [id])
 
   useEffect(() => {
-    if (!sessionId) return
-    getSessionById(sessionId)
-      .then(sess => { if (sess) setTranscript(sess.messages) })
-      .catch(() => { /* transcript is best-effort, don't surface errors */ })
-  }, [sessionId])
+    if (!id) return
+    getCompletedSessions(id)
+      .then(setCompletedSessions)
+      .catch(() => { /* sessions list is best-effort */ })
+  }, [id])
 
   function makeTimeout(ms = 12_000) {
     return new Promise<never>((_, reject) =>
@@ -345,32 +345,49 @@ export default function NoteDetail() {
           </div>
           <div className="hidden md:block"><Rule /></div>
 
-          {/* Session transcript — shown after session complete */}
-          {sessionComplete && transcript && transcript.length > 0 && (
-            <div>
-              <button
-                onClick={() => setTranscriptOpen(o => !o)}
-                className="w-full px-5 md:px-7 py-4 flex items-center justify-between border-b border-rule"
-                data-testid="transcript-toggle"
-              >
-                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">Session transcript</span>
-                <span className="font-mono text-[11px] text-dim">{transcriptOpen ? '▲' : '▼'}</span>
-              </button>
-              {transcriptOpen && (
-                <div className="px-5 md:px-7 py-5 space-y-4 font-mono text-[13px] leading-relaxed border-b border-rule max-h-[340px] overflow-y-auto thinbar" data-testid="transcript-body">
-                  {transcript.map((m, i) => (
-                    <div key={i}>
-                      <div
-                        className="text-[11px] uppercase tracking-[0.18em] mb-[2px]"
-                        style={{ color: m.role === 'user' ? 'var(--accent)' : 'var(--muted)' }}
-                      >
-                        {m.role === 'user' ? '> me' : 'recall'}
+          {/* Past sessions */}
+          {completedSessions.length > 0 && (
+            <div data-testid="past-sessions">
+              {completedSessions.map(sess => {
+                const isOpen = openSessionId === sess.id
+                const tier = sess.self_rating != null ? ['cold','cool','warm','hot','solid'][sess.self_rating - 1] : null
+                return (
+                  <div key={sess.id} className="border-b border-rule">
+                    <button
+                      onClick={() => setOpenSessionId(isOpen ? null : sess.id)}
+                      className="w-full px-5 md:px-7 py-3 flex items-center justify-between"
+                      data-testid={`session-toggle-${sess.id}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
+                          {formatCaptured(sess.completed_at!)}
+                        </span>
+                        {tier && (
+                          <span className="font-mono text-[11px] uppercase tracking-[0.14em]" style={{ color: 'var(--accent)' }}>
+                            {tier}
+                          </span>
+                        )}
                       </div>
-                      <div style={{ color: 'var(--text)' }}>{m.content}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                      <span className="font-mono text-[11px] text-dim">{isOpen ? '▲' : '▼'}</span>
+                    </button>
+                    {isOpen && (
+                      <div className="px-5 md:px-7 pb-5 space-y-4 font-mono text-[13px] leading-relaxed max-h-[340px] overflow-y-auto thinbar" data-testid={`session-transcript-${sess.id}`}>
+                        {sess.messages.map((m, i) => (
+                          <div key={i}>
+                            <div
+                              className="text-[11px] uppercase tracking-[0.18em] mb-[2px]"
+                              style={{ color: m.role === 'user' ? 'var(--accent)' : 'var(--muted)' }}
+                            >
+                              {m.role === 'user' ? '> me' : 'recall'}
+                            </div>
+                            <div style={{ color: 'var(--text)' }}>{m.content}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
 

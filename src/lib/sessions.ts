@@ -49,3 +49,12 @@ export async function getIncompleteSession(noteId: string): Promise<Session | nu
   const d = snap.docs[0]
   return toSession(d.id, d.data())
 }
+
+export async function getCompletedSessions(noteId: string): Promise<Session[]> {
+  const q = query(collection(db, 'sessions'), where('note_id', '==', noteId))
+  const snap = await getDocs(q)
+  return snap.docs
+    .map(d => toSession(d.id, d.data()))
+    .filter(s => s.completed_at !== null)
+    .sort((a, b) => b.completed_at!.toMillis() - a.completed_at!.toMillis())
+}

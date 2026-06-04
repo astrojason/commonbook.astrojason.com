@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import NoteDetail from './NoteDetail'
 import { getNoteById, softDeleteNote, updateNoteAfterRating } from '../lib/notes'
-import { createSession, getIncompleteSession, getSessionById, updateSession } from '../lib/sessions'
+import { createSession, getCompletedSessions, getIncompleteSession, updateSession } from '../lib/sessions'
 import { incrementStats } from '../lib/stats'
 import type { Note, Session } from '../types'
 import type { Timestamp } from 'firebase/firestore'
@@ -16,8 +16,8 @@ vi.mock('../lib/notes', () => ({
 
 vi.mock('../lib/sessions', () => ({
   createSession: vi.fn(),
+  getCompletedSessions: vi.fn(),
   getIncompleteSession: vi.fn(),
-  getSessionById: vi.fn(),
   updateSession: vi.fn(),
 }))
 
@@ -69,7 +69,7 @@ beforeEach(() => {
   vi.mocked(softDeleteNote).mockResolvedValue(undefined)
   vi.mocked(updateNoteAfterRating).mockResolvedValue(undefined)
   vi.mocked(getIncompleteSession).mockResolvedValue(null)
-  vi.mocked(getSessionById).mockResolvedValue(null)
+  vi.mocked(getCompletedSessions).mockResolvedValue([])
   vi.mocked(createSession).mockResolvedValue('new-session-id')
   vi.mocked(updateSession).mockResolvedValue(undefined)
   vi.mocked(incrementStats).mockResolvedValue(undefined)
@@ -236,55 +236,71 @@ describe('NoteDetail — error handling', () => {
   })
 })
 
-describe('NoteDetail — session transcript', () => {
-  it('shows a transcript toggle when sessionComplete and session has messages', async () => {
-    vi.mocked(getSessionById).mockResolvedValue({
-      id: 'sess-123',
-      note_id: 'note-abc',
-      messages: [
-        { role: 'assistant', content: 'What is the memoryless property?' },
-        { role: 'user', content: 'Each state only depends on the current state.' },
-      ],
-      completed_at: mockTs(new Date()),
-      self_rating: null,
-    })
+describe('NoteDetail — past sessions', () => {
+  it('shows past sessions regardless of sessionComplete state', async () => {
+    vi.mocked(getCompletedSessions).mockResolvedValue([
+      {
+        id: 'sess-old',
+        note_id: 'note-abc',
+        messages: [{ role: 'assistant', content: 'Q1?' }, { role: 'user', content: 'A1' }],
+        completed_at: mockTs(new Date('2026-06-01T10:00:00')),
+        self_rating: 3,
+      },
+    ])
 
-    renderNoteDetail('/note/note-abc', { sessionComplete: true, sessionId: 'sess-123' })
-    await screen.findByText('Markov chains')
-
-    expect(await screen.findByTestId('transcript-toggle')).toBeInTheDocument()
-  })
-
-  it('expands and collapses the transcript on toggle click', async () => {
-    vi.mocked(getSessionById).mockResolvedValue({
-      id: 'sess-123',
-      note_id: 'note-abc',
-      messages: [
-        { role: 'assistant', content: 'Explain the memoryless property.' },
-        { role: 'user', content: 'It means the future state only depends on now.' },
-      ],
-      completed_at: mockTs(new Date()),
-      self_rating: null,
-    })
-
-    const user = userEvent.setup()
-    renderNoteDetail('/note/note-abc', { sessionComplete: true, sessionId: 'sess-123' })
-    await screen.findByTestId('transcript-toggle')
-
-    expect(screen.queryByTestId('transcript-body')).not.toBeInTheDocument()
-
-    await user.click(screen.getByTestId('transcript-toggle'))
-    expect(screen.getByTestId('transcript-body')).toBeInTheDocument()
-    expect(screen.getByText('Explain the memoryless property.')).toBeInTheDocument()
-
-    await user.click(screen.getByTestId('transcript-toggle'))
-    expect(screen.queryByTestId('transcript-body')).not.toBeInTheDocument()
-  })
-
-  it('does not show transcript toggle when not sessionComplete', async () => {
     renderNoteDetail()
     await screen.findByText('Markov chains')
-    expect(screen.queryByTestId('transcript-toggle')).not.toBeInTheDocument()
+
+    expect(await screen.findByTestId('past-sessions')).toBeInTheDocument()
+  })
+
+  it('expands and collapses a session transcript on toggle click', async () => {
+    vi.mocked(getCompletedSessions).mockResolvedValue([
+      {
+        id: 'sess-old',
+        note_id: 'note-abc',
+        messages: [
+          { role: 'assistant', content: 'Explain the memoryless property.' },
+          { role: 'user', content: 'It means the future state only depends on now.' },
+        ],
+        completed_at: mockTs(new Date('2026-06-01T10:00:00')),
+        self_rating: null,
+      },
+    ])
+
+    const user = userEvent.setup()
+    renderNoteDetail()
+    await screen.findByTestId('past-sessions')
+
+    expect(screen.queryByTestId('session-transcript-sess-old')).not.toBeInTheDocument()
+
+    await user.click(screen.getByTestId('session-toggle-sess-old'))
+    expect(screen.getByTestId('session-transcript-sess-old')).toBeInTheDocument()
+    expect(screen.getByText('Explain the memoryless property.')).toBeInTheDocument()
+
+    await user.click(screen.getByTestId('session-toggle-sess-old'))
+    expect(screen.queryByTestId('session-transcript-sess-old')).not.toBeInTheDocument()
+  })
+
+  it('shows the rating tier when self_rating is set', async () => {
+    vi.mocked(getCompletedSessions).mockResolvedValue([
+      {
+        id: 'sess-rated',
+        note_id: 'note-abc',
+        messages: [],
+        completed_at: mockTs(new Date('2026-06-01T10:00:00')),
+        self_rating: 4,
+      },
+    ])
+
+    renderNoteDetail()
+    expect(await screen.findByText('hot')).toBeInTheDocument()
+  })
+
+  it('shows nothing when no completed sessions exist', async () => {
+    renderNoteDetail()
+    await screen.findByText('Markov chains')
+    expect(screen.queryByTestId('past-sessions')).not.toBeInTheDocument()
   })
 })
 
