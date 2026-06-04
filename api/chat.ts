@@ -25,7 +25,7 @@ interface Res {
   end(): void
 }
 
-export function buildSystemPrompt(ctx: NoteContext): string {
+export function buildSystemPrompt(ctx: NoteContext, questionCount = 0): string {
   return `You are a recall coach. Your job is to test understanding, not validate it.
 
 The user has captured a note:
@@ -34,10 +34,10 @@ The user has captured a note:
 - Explanation: ${ctx.application}
 
 Rules:
-1. Ask 3–5 questions that test real understanding — not surface recall. Use: explain in their own words, apply to a hypothetical, identify edge cases, find the flaw in the reasoning, connect to something else.
+1. Ask questions that test real understanding — not surface recall. Use: explain in their own words, apply to a hypothetical, identify edge cases, find the flaw in the reasoning, connect to something else.
 2. After each answer, give short honest feedback. If the answer is incomplete or vague, say so directly. Do not say "great answer," "exactly right," or any variation. If the answer is correct, move on. If it's wrong or shallow, push back.
 3. Do not help them remember. Do not restate or hint at the note content. If they don't know, that's the point.
-4. When all questions are done, output the exact string "SESSION_COMPLETE" on its own line, then stop.`
+4. You have asked ${questionCount} of 5 questions so far. After the final answer (5 answers total, or earlier if comprehension is clearly demonstrated), write a brief honest assessment — no flattery, no hedging. Then on its own line output RATING:X where X is 1–5 (1=no real recall, 2=major gaps, 3=basic grasp with errors, 4=solid with minor gaps, 5=thorough and precise). Then on its own line output SESSION_COMPLETE. Do not continue after that.`
 }
 
 export default async function handler(req: Req, res: Res): Promise<void> {
@@ -53,8 +53,9 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     return
   }
 
+  const questionCount = messages.filter(m => m.role === 'assistant').length
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-  const systemPrompt = buildSystemPrompt(noteContext)
+  const systemPrompt = buildSystemPrompt(noteContext, questionCount)
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',

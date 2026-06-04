@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import type { Timestamp } from 'firebase/firestore'
 import { getNoteById, softDeleteNote, updateNoteAfterRating } from '../lib/notes'
-import { createSession, getIncompleteSession, updateSession } from '../lib/sessions'
+import { createSession, getIncompleteSession, getSessionById, updateSession } from '../lib/sessions'
 import { incrementStats } from '../lib/stats'
 import { computeSM2 } from '../lib/sm2'
 import { Rule } from '../components/Rule'
 import { StrengthBar } from '../components/StrengthBar'
 import { MarkdownBody } from '../components/MarkdownBody'
-import type { Note } from '../types'
+import type { Message, Note } from '../types'
 
 const TIERS = ['cold', 'cool', 'warm', 'hot', 'solid'] as const
 const NEXT_REVIEW_LABELS = ['tomorrow', '+2d', '+5d', '+14d', '+30d']
@@ -52,14 +52,17 @@ export default function NoteDetail() {
   const location = useLocation()
   const sessionComplete = location.state?.sessionComplete === true
   const sessionId = location.state?.sessionId as string | undefined
+  const suggestedRating = location.state?.suggestedRating as number | undefined
 
   const [note, setNote] = useState<Note | null>(null)
   const [loading, setLoading] = useState(true)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
-  const [rating, setRating] = useState<number | null>(null)
+  const [rating, setRating] = useState<number | null>(suggestedRating ?? null)
   const [submitting, setSubmitting] = useState(false)
   const [startingSession, setStartingSession] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [transcript, setTranscript] = useState<Message[] | null>(null)
+  const [transcriptOpen, setTranscriptOpen] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -70,6 +73,13 @@ export default function NoteDetail() {
         setLoading(false)
       })
   }, [id])
+
+  useEffect(() => {
+    if (!sessionId) return
+    getSessionById(sessionId)
+      .then(sess => { if (sess) setTranscript(sess.messages) })
+      .catch(() => { /* transcript is best-effort, don't surface errors */ })
+  }, [sessionId])
 
   function makeTimeout(ms = 12_000) {
     return new Promise<never>((_, reject) =>
@@ -335,6 +345,35 @@ export default function NoteDetail() {
           </div>
           <div className="hidden md:block"><Rule /></div>
 
+          {/* Session transcript — shown after session complete */}
+          {sessionComplete && transcript && transcript.length > 0 && (
+            <div>
+              <button
+                onClick={() => setTranscriptOpen(o => !o)}
+                className="w-full px-5 md:px-7 py-4 flex items-center justify-between border-b border-rule"
+                data-testid="transcript-toggle"
+              >
+                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">Session transcript</span>
+                <span className="font-mono text-[11px] text-dim">{transcriptOpen ? '▲' : '▼'}</span>
+              </button>
+              {transcriptOpen && (
+                <div className="px-5 md:px-7 py-5 space-y-4 font-mono text-[13px] leading-relaxed border-b border-rule max-h-[340px] overflow-y-auto thinbar" data-testid="transcript-body">
+                  {transcript.map((m, i) => (
+                    <div key={i}>
+                      <div
+                        className="text-[11px] uppercase tracking-[0.18em] mb-[2px]"
+                        style={{ color: m.role === 'user' ? 'var(--accent)' : 'var(--muted)' }}
+                      >
+                        {m.role === 'user' ? '> me' : 'recall'}
+                      </div>
+                      <div style={{ color: 'var(--text)' }}>{m.content}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Rating — single DOM node, responsive styling for both mobile and desktop */}
           <div className="px-5 md:px-7 py-6 bg-ink-2 md:flex-1">
             <div className="flex items-baseline justify-between">
@@ -346,6 +385,11 @@ export default function NoteDetail() {
             <div className="mt-1 font-mono text-[12px] text-dim leading-relaxed">
               Be honest. The schedule depends on it.
             </div>
+            {suggestedRating != null && (
+              <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-dim" data-testid="ai-suggested-label">
+                AI suggested · change if you disagree
+              </div>
+            )}
 
             {!sessionComplete && (
               <div className="mt-4 font-mono text-[12px] text-dim" data-testid="rating-locked">

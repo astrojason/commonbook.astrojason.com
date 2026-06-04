@@ -123,35 +123,31 @@ describe('Session — load', () => {
 })
 
 describe('Session — SESSION_COMPLETE detection', () => {
-  it('navigates to note detail with sessionComplete state on SESSION_COMPLETE', async () => {
-    vi.spyOn(globalThis, 'fetch').mockImplementation((url) => {
-      if (url.toString().includes('api/chat')) {
-        return Promise.resolve(
-          makeSSEResponse([
-            { choices: [{ delta: { content: 'Good effort!\nSESSION_COMPLETE' } }] },
-          ]),
-        )
-      }
-      return Promise.resolve({ ok: true, json: async () => ({ tokens: 0 }) } as Response)
-    })
+  it('shows completion panel instead of navigating immediately on SESSION_COMPLETE', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(
+        makeSSEResponse([
+          { choices: [{ delta: { content: 'Good effort!\nSESSION_COMPLETE' } }] },
+        ]),
+      ),
+    )
 
     const user = userEvent.setup()
     renderSession()
 
-    const textarea = await screen.findByLabelText('message input')
-    await user.type(textarea, 'my answer')
+    await user.type(await screen.findByLabelText('message input'), 'my answer')
     await user.click(screen.getByRole('button', { name: /send/i }))
 
-    const navState = await screen.findByTestId('nav-state')
-    expect(navState).toHaveTextContent('"sessionComplete":true')
-    expect(navState).toHaveTextContent('"sessionId":"sess-123"')
+    expect(await screen.findByTestId('session-complete-marker')).toBeInTheDocument()
+    expect(screen.getByTestId('rate-session-btn')).toBeInTheDocument()
+    expect(screen.queryByTestId('note-page')).not.toBeInTheDocument()
   })
 
-  it('navigates to the correct note ID on SESSION_COMPLETE', async () => {
+  it('navigates to note detail with sessionComplete state when rate button is clicked', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
       Promise.resolve(
         makeSSEResponse([
-          { choices: [{ delta: { content: 'SESSION_COMPLETE' } }] },
+          { choices: [{ delta: { content: 'Done.\nSESSION_COMPLETE' } }] },
         ]),
       ),
     )
@@ -162,7 +158,52 @@ describe('Session — SESSION_COMPLETE detection', () => {
     await user.type(await screen.findByLabelText('message input'), 'answer')
     await user.click(screen.getByRole('button', { name: /send/i }))
 
-    expect(await screen.findByTestId('note-page')).toBeInTheDocument()
+    await user.click(await screen.findByTestId('rate-session-btn'))
+
+    const navState = await screen.findByTestId('nav-state')
+    expect(navState).toHaveTextContent('"sessionComplete":true')
+    expect(navState).toHaveTextContent('"sessionId":"sess-123"')
+  })
+
+  it('parses RATING:X and passes suggestedRating when rate button is clicked', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(
+        makeSSEResponse([
+          { choices: [{ delta: { content: 'Gaps in your understanding.\nRATING:2\nSESSION_COMPLETE' } }] },
+        ]),
+      ),
+    )
+
+    const user = userEvent.setup()
+    renderSession()
+
+    await user.type(await screen.findByLabelText('message input'), 'my answer')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+
+    await user.click(await screen.findByTestId('rate-session-btn'))
+
+    const navState = await screen.findByTestId('nav-state')
+    expect(navState).toHaveTextContent('"suggestedRating":2')
+  })
+
+  it('strips RATING:X from the displayed message content', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(
+        makeSSEResponse([
+          { choices: [{ delta: { content: 'Assessment here.\nRATING:4\nSESSION_COMPLETE' } }] },
+        ]),
+      ),
+    )
+
+    const user = userEvent.setup()
+    renderSession()
+
+    await user.type(await screen.findByLabelText('message input'), 'answer')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+
+    await screen.findByTestId('rate-session-btn')
+    const [, data] = vi.mocked(updateSession).mock.calls[0]
+    expect(data.messages!.at(-1)!.content).not.toMatch(/RATING:/)
   })
 })
 
@@ -206,7 +247,7 @@ describe('Session — Firestore writes', () => {
     await user.type(await screen.findByLabelText('message input'), 'answer')
     await user.click(screen.getByRole('button', { name: /send/i }))
 
-    await screen.findByTestId('note-page')
+    await screen.findByTestId('rate-session-btn')
 
     const [, data] = vi.mocked(updateSession).mock.calls[0]
     expect(data.completed_at).toBeInstanceOf(Date)

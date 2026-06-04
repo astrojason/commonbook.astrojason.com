@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import NoteDetail from './NoteDetail'
 import { getNoteById, softDeleteNote, updateNoteAfterRating } from '../lib/notes'
-import { createSession, getIncompleteSession, updateSession } from '../lib/sessions'
+import { createSession, getIncompleteSession, getSessionById, updateSession } from '../lib/sessions'
 import { incrementStats } from '../lib/stats'
 import type { Note, Session } from '../types'
 import type { Timestamp } from 'firebase/firestore'
@@ -17,6 +17,7 @@ vi.mock('../lib/notes', () => ({
 vi.mock('../lib/sessions', () => ({
   createSession: vi.fn(),
   getIncompleteSession: vi.fn(),
+  getSessionById: vi.fn(),
   updateSession: vi.fn(),
 }))
 
@@ -68,6 +69,7 @@ beforeEach(() => {
   vi.mocked(softDeleteNote).mockResolvedValue(undefined)
   vi.mocked(updateNoteAfterRating).mockResolvedValue(undefined)
   vi.mocked(getIncompleteSession).mockResolvedValue(null)
+  vi.mocked(getSessionById).mockResolvedValue(null)
   vi.mocked(createSession).mockResolvedValue('new-session-id')
   vi.mocked(updateSession).mockResolvedValue(undefined)
   vi.mocked(incrementStats).mockResolvedValue(undefined)
@@ -101,6 +103,20 @@ describe('NoteDetail — self-rating lock', () => {
     await screen.findByText('Markov chains')
     expect(screen.getByTestId('rating-unlocked')).toBeInTheDocument()
     expect(screen.queryByTestId('rating-locked')).not.toBeInTheDocument()
+  })
+
+  it('pre-selects the suggested rating and shows AI label when suggestedRating is in state', async () => {
+    renderNoteDetail('/note/note-abc', { sessionComplete: true, suggestedRating: 4 })
+    await screen.findByText('Markov chains')
+    expect(screen.getByTestId('ai-suggested-label')).toBeInTheDocument()
+    // Log review should be enabled (rating already selected)
+    expect(screen.getByRole('button', { name: /log review/i })).not.toBeDisabled()
+  })
+
+  it('does not show AI label when no suggestedRating', async () => {
+    renderNoteDetail('/note/note-abc', { sessionComplete: true })
+    await screen.findByText('Markov chains')
+    expect(screen.queryByTestId('ai-suggested-label')).not.toBeInTheDocument()
   })
 })
 
@@ -217,6 +233,58 @@ describe('NoteDetail — error handling', () => {
     await user.click(screen.getByRole('button', { name: /log review/i }))
     await screen.findByRole('alert')
     expect(screen.getByRole('button', { name: /log review/i })).not.toBeDisabled()
+  })
+})
+
+describe('NoteDetail — session transcript', () => {
+  it('shows a transcript toggle when sessionComplete and session has messages', async () => {
+    vi.mocked(getSessionById).mockResolvedValue({
+      id: 'sess-123',
+      note_id: 'note-abc',
+      messages: [
+        { role: 'assistant', content: 'What is the memoryless property?' },
+        { role: 'user', content: 'Each state only depends on the current state.' },
+      ],
+      completed_at: new Date(),
+      self_rating: null,
+    })
+
+    renderNoteDetail('/note/note-abc', { sessionComplete: true, sessionId: 'sess-123' })
+    await screen.findByText('Markov chains')
+
+    expect(await screen.findByTestId('transcript-toggle')).toBeInTheDocument()
+  })
+
+  it('expands and collapses the transcript on toggle click', async () => {
+    vi.mocked(getSessionById).mockResolvedValue({
+      id: 'sess-123',
+      note_id: 'note-abc',
+      messages: [
+        { role: 'assistant', content: 'Explain the memoryless property.' },
+        { role: 'user', content: 'It means the future state only depends on now.' },
+      ],
+      completed_at: new Date(),
+      self_rating: null,
+    })
+
+    const user = userEvent.setup()
+    renderNoteDetail('/note/note-abc', { sessionComplete: true, sessionId: 'sess-123' })
+    await screen.findByTestId('transcript-toggle')
+
+    expect(screen.queryByTestId('transcript-body')).not.toBeInTheDocument()
+
+    await user.click(screen.getByTestId('transcript-toggle'))
+    expect(screen.getByTestId('transcript-body')).toBeInTheDocument()
+    expect(screen.getByText('Explain the memoryless property.')).toBeInTheDocument()
+
+    await user.click(screen.getByTestId('transcript-toggle'))
+    expect(screen.queryByTestId('transcript-body')).not.toBeInTheDocument()
+  })
+
+  it('does not show transcript toggle when not sessionComplete', async () => {
+    renderNoteDetail()
+    await screen.findByText('Markov chains')
+    expect(screen.queryByTestId('transcript-toggle')).not.toBeInTheDocument()
   })
 })
 

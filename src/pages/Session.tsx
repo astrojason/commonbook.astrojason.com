@@ -18,6 +18,7 @@ export default function SessionPage() {
   const [streamText, setStreamText] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [done, setDone] = useState(false)
+  const [suggestedRating, setSuggestedRating] = useState<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
   const [retryMessage, setRetryMessage] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -62,12 +63,25 @@ export default function SessionPage() {
     return () => clearTimeout(t)
   }, [toast])
 
+  const MAX_QUESTIONS = 5
+
   async function handleSend(text: string = input) {
     const trimmed = text.trim()
     if (!trimmed || !session || !note || streaming || done) return
 
     if (!navigator.onLine) {
       setToast('No internet connection — sessions require a live connection.')
+      return
+    }
+
+    const questionCount = messages.filter(m => m.role === 'assistant').length
+    if (questionCount >= MAX_QUESTIONS) {
+      const updateData = { messages, completed_at: new Date() }
+      await updateSession(session.id, updateData)
+      setDone(true)
+      navigate(`/note/${note.id}`, {
+        state: { sessionComplete: true, sessionId: session.id },
+      })
       return
     }
 
@@ -141,7 +155,11 @@ export default function SessionPage() {
       }
 
       const isComplete = accumulated.includes('SESSION_COMPLETE')
+      const ratingMatch = accumulated.match(/RATING:([1-5])/)
+      const suggestedRating = ratingMatch ? parseInt(ratingMatch[1], 10) : undefined
       const displayContent = accumulated
+        .replace(/\nRATING:[1-5]\s*/g, '\n')
+        .replace(/RATING:[1-5]\s*/g, '')
         .replace(/\nSESSION_COMPLETE\s*$/, '')
         .replace(/SESSION_COMPLETE\s*$/, '')
         .trim()
@@ -165,10 +183,8 @@ export default function SessionPage() {
       }
 
       if (isComplete) {
+        setSuggestedRating(suggestedRating)
         setDone(true)
-        navigate(`/note/${note.id}`, {
-          state: { sessionComplete: true, sessionId: session.id },
-        })
       }
     } catch (err) {
       setMessages(prevMessages)
@@ -295,7 +311,7 @@ export default function SessionPage() {
                 )}
 
                 {done && (
-                  <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-dim">
+                  <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-dim" data-testid="session-complete-marker">
                     — session complete —
                   </div>
                 )}
@@ -316,6 +332,26 @@ export default function SessionPage() {
                     retry →
                   </button>
                 )}
+              </div>
+            )}
+
+            {/* Completion panel */}
+            {done && (
+              <div className="border-t border-rule px-5 md:px-10 py-4 flex items-center justify-between md:max-w-[760px]">
+                <div className="font-mono text-[12px] text-dim">
+                  {suggestedRating != null
+                    ? <>AI rating: <span style={{ color: 'var(--accent)' }}>{['cold','cool','warm','hot','solid'][suggestedRating - 1]}</span></>
+                    : null}
+                </div>
+                <button
+                  onClick={() => navigate(`/note/${note!.id}`, {
+                    state: { sessionComplete: true, sessionId: session!.id, suggestedRating },
+                  })}
+                  className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-2 border border-accent text-accent"
+                  data-testid="rate-session-btn"
+                >
+                  rate this session →
+                </button>
               </div>
             )}
 

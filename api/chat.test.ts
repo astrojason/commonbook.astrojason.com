@@ -59,6 +59,27 @@ describe('buildSystemPrompt', () => {
     const prompt = buildSystemPrompt(NOTE_CTX)
     expect(prompt).toContain('SESSION_COMPLETE')
   })
+
+  it('shows current question count and 5-question cap', () => {
+    const prompt = buildSystemPrompt(NOTE_CTX, 3)
+    expect(prompt).toContain('3 of 5')
+  })
+
+  it('defaults to 0 questions asked when count omitted', () => {
+    const prompt = buildSystemPrompt(NOTE_CTX)
+    expect(prompt).toContain('0 of 5')
+  })
+
+  it('includes both exit conditions — comprehension and question cap', () => {
+    const prompt = buildSystemPrompt(NOTE_CTX, 0)
+    expect(prompt).toMatch(/comprehension/i)
+    expect(prompt).toMatch(/5/i)
+  })
+
+  it('includes RATING:X instruction', () => {
+    const prompt = buildSystemPrompt(NOTE_CTX)
+    expect(prompt).toContain('RATING:X')
+  })
 })
 
 describe('handler — validation', () => {
@@ -115,6 +136,23 @@ describe('handler — system prompt', () => {
     const callArgs = mockCreate.mock.calls[0][0]
     expect(callArgs.messages[0].role).toBe('system')
     expect(callArgs.messages[1]).toEqual(userMessage)
+  })
+
+  it('counts assistant turns and injects the question count into the system prompt', async () => {
+    mockCreate.mockResolvedValue(makeStream([]))
+
+    const messages = [
+      { role: 'assistant', content: 'Q1?' },
+      { role: 'user', content: 'A1' },
+      { role: 'assistant', content: 'Q2?' },
+      { role: 'user', content: 'A2' },
+    ]
+    const res = mockRes()
+    await handler(mockReq({ noteContext: NOTE_CTX, messages }), res)
+
+    const callArgs = mockCreate.mock.calls[0][0]
+    const systemMsg = callArgs.messages.find((m: { role: string }) => m.role === 'system')
+    expect(systemMsg.content).toContain('2 of 5')
   })
 })
 
