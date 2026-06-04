@@ -245,7 +245,7 @@ describe('NoteDetail — session transcript', () => {
         { role: 'assistant', content: 'What is the memoryless property?' },
         { role: 'user', content: 'Each state only depends on the current state.' },
       ],
-      completed_at: new Date(),
+      completed_at: mockTs(new Date()),
       self_rating: null,
     })
 
@@ -263,7 +263,7 @@ describe('NoteDetail — session transcript', () => {
         { role: 'assistant', content: 'Explain the memoryless property.' },
         { role: 'user', content: 'It means the future state only depends on now.' },
       ],
-      completed_at: new Date(),
+      completed_at: mockTs(new Date()),
       self_rating: null,
     })
 

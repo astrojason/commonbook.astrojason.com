@@ -203,7 +203,8 @@ describe('Session — SESSION_COMPLETE detection', () => {
 
     await screen.findByTestId('rate-session-btn')
     const [, data] = vi.mocked(updateSession).mock.calls[0]
-    expect(data.messages!.at(-1)!.content).not.toMatch(/RATING:/)
+    const last = data.messages![data.messages!.length - 1]
+    expect(last.content).not.toMatch(/RATING:/)
   })
 })
 
