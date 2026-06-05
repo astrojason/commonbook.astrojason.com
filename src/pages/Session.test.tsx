@@ -354,6 +354,65 @@ describe('Session — offline toast', () => {
   })
 })
 
+describe('Session — completed session loaded from Firestore', () => {
+  it('shows completion panel without composer when session has completed_at set', async () => {
+    const completedSession: SessionType = {
+      ...mockSession,
+      messages: [
+        { role: 'user', content: 'my answer' },
+        { role: 'assistant', content: 'Final assessment here.' },
+      ],
+      completed_at: mockTs(new Date('2026-06-01')),
+    }
+    vi.mocked(getSessionById).mockResolvedValue(completedSession)
+
+    renderSession()
+
+    expect(await screen.findByTestId('session-complete-marker')).toBeInTheDocument()
+    expect(screen.getByTestId('rate-session-btn')).toBeInTheDocument()
+    expect(screen.queryByLabelText('message input')).not.toBeInTheDocument()
+  })
+})
+
+describe('Session — 5th answer sends to API for final assessment', () => {
+  it('calls the API instead of navigating when 5 assistant messages exist', async () => {
+    const fiveQuestionSession: SessionType = {
+      ...mockSession,
+      messages: [
+        { role: 'user', content: 'start' },
+        { role: 'assistant', content: 'Q1?' },
+        { role: 'user', content: 'A1' },
+        { role: 'assistant', content: 'Q2?' },
+        { role: 'user', content: 'A2' },
+        { role: 'assistant', content: 'Q3?' },
+        { role: 'user', content: 'A3' },
+        { role: 'assistant', content: 'Q4?' },
+        { role: 'user', content: 'A4' },
+        { role: 'assistant', content: 'Q5?' },
+      ],
+    }
+    vi.mocked(getSessionById).mockResolvedValue(fiveQuestionSession)
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(
+        makeSSEResponse([
+          { choices: [{ delta: { content: 'Good coverage overall.\nRATING:4\nSESSION_COMPLETE' } }] },
+        ]),
+      ),
+    )
+
+    const user = userEvent.setup()
+    renderSession()
+
+    await user.type(await screen.findByLabelText('message input'), 'final answer')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+
+    expect(await screen.findByTestId('session-complete-marker')).toBeInTheDocument()
+    expect(fetch).toHaveBeenCalledWith('/api/chat', expect.anything())
+    expect(screen.queryByTestId('note-page')).not.toBeInTheDocument()
+  })
+})
+
 describe('Session — token gate', () => {
   it('shows the token gate when usage is at or over the limit', async () => {
     vi.mocked(getTokensUsed).mockResolvedValue(250_000)

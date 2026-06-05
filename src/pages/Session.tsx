@@ -36,6 +36,7 @@ export default function SessionPage() {
         setSession(sess)
         setNote(n)
         setMessages(sess.messages)
+        if (sess.completed_at) setDone(true)
         setLoading(false)
 
         const used = await getTokensUsed()
@@ -63,25 +64,12 @@ export default function SessionPage() {
     return () => clearTimeout(t)
   }, [toast])
 
-  const MAX_QUESTIONS = 5
-
   async function handleSend(text: string = input) {
     const trimmed = text.trim()
     if (!trimmed || !session || !note || streaming || done) return
 
     if (!navigator.onLine) {
       setToast('No internet connection — sessions require a live connection.')
-      return
-    }
-
-    const questionCount = messages.filter(m => m.role === 'assistant').length
-    if (questionCount >= MAX_QUESTIONS) {
-      const updateData = { messages, completed_at: new Date() }
-      await updateSession(session.id, updateData)
-      setDone(true)
-      navigate(`/note/${note.id}`, {
-        state: { sessionComplete: true, sessionId: session.id },
-      })
       return
     }
 

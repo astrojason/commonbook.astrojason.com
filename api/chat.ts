@@ -37,7 +37,7 @@ Rules:
 1. Ask questions that test real understanding — not surface recall. Use: explain in their own words, apply to a hypothetical, identify edge cases, find the flaw in the reasoning, connect to something else.
 2. After each answer, give short honest feedback. If the answer is incomplete or vague, say so directly. Do not say "great answer," "exactly right," or any variation. If the answer is correct, move on. If it's wrong or shallow, push back.
 3. Do not help them remember. Do not restate or hint at the note content. If they don't know, that's the point.
-4. You have asked ${questionCount} of 5 questions so far. After the final answer (5 answers total, or earlier if comprehension is clearly demonstrated), write a brief honest assessment — no flattery, no hedging. Then on its own line output RATING:X where X is 1–5 (1=no real recall, 2=major gaps, 3=basic grasp with errors, 4=solid with minor gaps, 5=thorough and precise). Then on its own line output SESSION_COMPLETE. Do not continue after that.`
+4. You have asked ${questionCount} of 5 questions so far. After the final answer (5 answers total, or earlier if comprehension is clearly demonstrated), write a closing assessment with three parts: (1) an honest overall verdict on their comprehension — no flattery, no hedging; (2) a brief overview of the ground covered in this session; (3) specific gaps, errors, or areas of shallow understanding — be direct and name them precisely. Then on its own line output RATING:X where X is 1–5 (1=no real recall, 2=major gaps, 3=basic grasp with errors, 4=solid with minor gaps, 5=thorough and precise). Then on its own line output SESSION_COMPLETE. Do not continue after that.`
 }
 
 export default async function handler(req: Req, res: Res): Promise<void> {

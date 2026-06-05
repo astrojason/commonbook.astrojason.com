@@ -10,3 +10,6 @@
 - [x] Stage 8 — Session Screen
 - [x] Stage 9 — Dashboard & Library
 - [x] Stage 10 — PWA
+
+### Bugs
+- [x] completing a session dumps you from the chat with no context, final message should be a rating of the comprehension and an overview of the discussion -- pointing out any problems with recall
