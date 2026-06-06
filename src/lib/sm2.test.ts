@@ -63,18 +63,20 @@ describe('computeSM2', () => {
       expect(computeSM2({ ...base, sessionCount: 4 }).sessionCount).toBe(5)
     })
 
-    it('nextReviewAt is in the future', () => {
-      const before = Date.now()
+    it('nextReviewAt is midnight on the target day', () => {
       const result = computeSM2(base)
-      expect(result.nextReviewAt.getTime()).toBeGreaterThan(before)
+      expect(result.nextReviewAt.getHours()).toBe(0)
+      expect(result.nextReviewAt.getMinutes()).toBe(0)
+      expect(result.nextReviewAt.getSeconds()).toBe(0)
+      expect(result.nextReviewAt.getMilliseconds()).toBe(0)
     })
 
-    it('nextReviewAt is approximately intervalDays ahead', () => {
+    it('nextReviewAt is exactly intervalDays days from today midnight', () => {
       const result = computeSM2({ ...base, sessionCount: 1 }) // interval=6
-      const expectedMs = 6 * 24 * 60 * 60 * 1000
-      const diff = result.nextReviewAt.getTime() - Date.now()
-      expect(diff).toBeGreaterThan(expectedMs - 5000)
-      expect(diff).toBeLessThan(expectedMs + 5000)
+      const expected = new Date()
+      expected.setHours(0, 0, 0, 0)
+      expected.setDate(expected.getDate() + 6)
+      expect(result.nextReviewAt.getTime()).toBe(expected.getTime())
     })
   })
 })

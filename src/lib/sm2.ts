@@ -29,6 +29,7 @@ export function computeSM2({ rating, intervalDays, easinessFactor, sessionCount 
   }
 
   const nextReviewAt = new Date()
+  nextReviewAt.setHours(0, 0, 0, 0)
   nextReviewAt.setDate(nextReviewAt.getDate() + newInterval)
 
   return {

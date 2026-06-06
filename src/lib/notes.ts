@@ -19,8 +19,8 @@ function toNote(id: string, data: Record<string, unknown>): Note {
 }
 
 export async function createNote(input: CreateNoteInput): Promise<string> {
-  const now = new Date()
-  const nextReview = new Date(now)
+  const nextReview = new Date()
+  nextReview.setHours(0, 0, 0, 0)
   nextReview.setDate(nextReview.getDate() + 1)
 
   const ref = await addDoc(collection(db, 'notes'), {
