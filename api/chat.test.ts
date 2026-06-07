@@ -60,14 +60,14 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('SESSION_COMPLETE')
   })
 
-  it('shows current question count and 5-question cap', () => {
-    const prompt = buildSystemPrompt(NOTE_CTX, 3)
+  it('shows current main question count and 5-question cap', () => {
+    const prompt = buildSystemPrompt(NOTE_CTX, 4)
     expect(prompt).toContain('3 of 5')
   })
 
-  it('defaults to 0 questions asked when count omitted', () => {
+  it('identifies the opener as question 0 when count is 0', () => {
     const prompt = buildSystemPrompt(NOTE_CTX)
-    expect(prompt).toContain('0 of 5')
+    expect(prompt).toMatch(/question 0|opener/i)
   })
 
   it('includes both exit conditions — comprehension and question cap', () => {
@@ -79,6 +79,21 @@ describe('buildSystemPrompt', () => {
   it('includes RATING:X instruction', () => {
     const prompt = buildSystemPrompt(NOTE_CTX)
     expect(prompt).toContain('RATING:X')
+  })
+
+  it('issues a hard stop when questionCount reaches 6 (after 5 main questions)', () => {
+    const prompt = buildSystemPrompt(NOTE_CTX, 6)
+    expect(prompt).toMatch(/do not ask any more questions/i)
+  })
+
+  it('enforces exactly one question per turn', () => {
+    const prompt = buildSystemPrompt(NOTE_CTX, 0)
+    expect(prompt).toMatch(/one question per turn/i)
+  })
+
+  it('constrains scope strictly to the note content', () => {
+    const prompt = buildSystemPrompt(NOTE_CTX, 0)
+    expect(prompt).toMatch(/strictly within/i)
   })
 })
 
@@ -138,10 +153,12 @@ describe('handler — system prompt', () => {
     expect(callArgs.messages[1]).toEqual(userMessage)
   })
 
-  it('counts assistant turns and injects the question count into the system prompt', async () => {
+  it('counts assistant turns and injects the main question count into the system prompt', async () => {
     mockCreate.mockResolvedValue(makeStream([]))
 
     const messages = [
+      { role: 'assistant', content: 'Q0?' },
+      { role: 'user', content: 'A0' },
       { role: 'assistant', content: 'Q1?' },
       { role: 'user', content: 'A1' },
       { role: 'assistant', content: 'Q2?' },

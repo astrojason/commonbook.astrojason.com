@@ -25,6 +25,7 @@ export default function SessionPage() {
   const [tokenGate, setTokenGate] = useState(false)
   const [tokenGateCount, setTokenGateCount] = useState(0)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const startedRef = useRef(false)
 
   useEffect(() => {
     if (!sessionId) return
@@ -33,17 +34,16 @@ export default function SessionPage() {
         const sess = await getSessionById(sessionId!)
         if (!sess) { setLoading(false); return }
         const n = await getNoteById(sess.note_id)
+        const used = await getTokensUsed()
         setSession(sess)
         setNote(n)
         setMessages(sess.messages)
         if (sess.completed_at) setDone(true)
-        setLoading(false)
-
-        const used = await getTokensUsed()
         if (used !== null && used >= DAILY_LIMIT) {
           setTokenGate(true)
           setTokenGateCount(used)
         }
+        setLoading(false)
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err))
         setLoading(false)
@@ -63,6 +63,90 @@ export default function SessionPage() {
     const t = setTimeout(() => setToast(null), 3000)
     return () => clearTimeout(t)
   }, [toast])
+
+  async function handleStart(sess: Session, n: Note) {
+    if (startedRef.current || messages.length > 0 || streaming || done) return
+    startedRef.current = true
+
+    setStreaming(true)
+    setStreamText('')
+    setError(null)
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: sess.id,
+          noteContext: {
+            what_it_said: n.what_it_said,
+            why_it_matters: n.why_it_matters,
+            application: n.application,
+          },
+          messages: [],
+        }),
+      })
+
+      if (!res.ok) throw new Error(`API error ${res.status}`)
+      if (!res.body) throw new Error('No response body')
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buf = ''
+      let accumulated = ''
+      let tokenCount = 0
+
+      outer: while (true) {
+        const { done: readerDone, value } = await reader.read()
+        if (readerDone) break
+        buf += decoder.decode(value, { stream: true })
+        const lines = buf.split('\n')
+        buf = lines.pop() ?? ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const payload = line.slice(6).trim()
+          if (payload === '[DONE]') break outer
+          try {
+            const chunk = JSON.parse(payload) as {
+              choices?: Array<{ delta?: { content?: string } }>
+              usage?: { prompt_tokens?: number; completion_tokens?: number }
+            }
+            if (chunk.usage) {
+              tokenCount = (chunk.usage.prompt_tokens ?? 0) + (chunk.usage.completion_tokens ?? 0)
+            }
+            const delta = chunk.choices?.[0]?.delta?.content
+            if (delta) {
+              accumulated += delta
+              setStreamText(accumulated)
+            }
+          } catch {
+            // ignore malformed SSE chunks
+          }
+        }
+      }
+
+      setStreamText('')
+      setStreaming(false)
+
+      if (!accumulated.trim()) return
+
+      const q1: Message = { role: 'assistant', content: accumulated }
+      setMessages([q1])
+      await updateSession(sess.id, { messages: [q1] })
+      if (tokenCount > 0) await reportTokens(tokenCount)
+    } catch (err) {
+      setStreamText('')
+      setStreaming(false)
+      setError(err instanceof Error ? err.message : String(err))
+      startedRef.current = false
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!session || !note || loading || done || tokenGate) return
+    handleStart(session, note)
+  }, [session, note, loading, done, tokenGate])
 
   async function handleSend(text: string = input) {
     const trimmed = text.trim()

@@ -39,7 +39,7 @@ const mockTs = (date: Date) => ({ toDate: () => date } as unknown as Timestamp)
 const mockSession: SessionType = {
   id: 'sess-123',
   note_id: 'note-abc',
-  messages: [],
+  messages: [{ role: 'assistant', content: 'Q1?' }],
   completed_at: null,
   self_rating: null,
 }
@@ -228,9 +228,9 @@ describe('Session — Firestore writes', () => {
 
     const [sid, data] = vi.mocked(updateSession).mock.calls[0]
     expect(sid).toBe('sess-123')
-    expect(data.messages).toHaveLength(2)
-    expect(data.messages![0]).toEqual({ role: 'user', content: 'user question' })
-    expect(data.messages![1]).toMatchObject({ role: 'assistant' })
+    expect(data.messages).toHaveLength(3)
+    expect(data.messages![1]).toEqual({ role: 'user', content: 'user question' })
+    expect(data.messages![2]).toMatchObject({ role: 'assistant' })
   })
 
   it('sets completed_at when SESSION_COMPLETE is detected', async () => {
@@ -432,5 +432,38 @@ describe('Session — token gate', () => {
 
     expect(screen.queryByText(/tokens today/i)).not.toBeInTheDocument()
     expect(screen.getByLabelText('message input')).toBeInTheDocument()
+  })
+})
+
+describe('Session — auto-start', () => {
+  it('calls the API automatically when the session has no messages', async () => {
+    vi.mocked(getSessionById).mockResolvedValue({ ...mockSession, messages: [] })
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(
+        makeSSEResponse([{ choices: [{ delta: { content: 'What is the memoryless property?' } }] }]),
+      ),
+    )
+
+    renderSession()
+
+    expect(await screen.findByText('What is the memoryless property?')).toBeInTheDocument()
+    expect(fetch).toHaveBeenCalledWith('/api/chat', expect.anything())
+  })
+
+  it('does not auto-start when the session already has messages', async () => {
+    renderSession()
+
+    await screen.findByLabelText('message input')
+    expect(fetch).not.toHaveBeenCalledWith('/api/chat', expect.anything())
+  })
+
+  it('does not auto-start when the token gate is active', async () => {
+    vi.mocked(getTokensUsed).mockResolvedValue(300_000)
+    vi.mocked(getSessionById).mockResolvedValue({ ...mockSession, messages: [] })
+
+    renderSession()
+
+    expect(await screen.findByText(/tokens today/i)).toBeInTheDocument()
+    expect(fetch).not.toHaveBeenCalledWith('/api/chat', expect.anything())
   })
 })
