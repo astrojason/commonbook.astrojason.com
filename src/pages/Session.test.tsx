@@ -466,4 +466,44 @@ describe('Session — auto-start', () => {
     expect(await screen.findByText(/tokens today/i)).toBeInTheDocument()
     expect(fetch).not.toHaveBeenCalledWith('/api/chat', expect.anything())
   })
+
+  it('shows a note-specific loading prompt in the initial empty state', async () => {
+    vi.mocked(getSessionById).mockResolvedValue({ ...mockSession, messages: [] })
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(makeSSEResponse([])),
+    )
+
+    renderSession()
+    await screen.findByText(/session ·/i)
+
+    await waitFor(() => {
+      expect(screen.queryByText(/waiting for your first message/i)).not.toBeInTheDocument()
+      expect(screen.getByText(/explain in your own words markov chains/i)).toBeInTheDocument()
+    })
+  })
+})
+
+describe('Session — final report rating label', () => {
+  it('includes the suggested rating label in the displayed final message content', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(
+        makeSSEResponse([
+          { choices: [{ delta: { content: 'Assessment.\nRATING:3\nSESSION_COMPLETE' } }] },
+        ]),
+      ),
+    )
+
+    const user = userEvent.setup()
+    renderSession()
+
+    await user.type(await screen.findByLabelText('message input'), 'answer')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+
+    await screen.findByTestId('session-complete-marker')
+
+    const [, data] = vi.mocked(updateSession).mock.calls[0]
+    const lastMsg = data.messages![data.messages!.length - 1]
+    expect(lastMsg.content).toMatch(/suggested rating.*warm/i)
+    expect(lastMsg.content).not.toMatch(/RATING:/)
+  })
 })

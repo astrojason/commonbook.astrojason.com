@@ -14,3 +14,5 @@
 ### Bugs
 - [x] completing a session dumps you from the chat with no context, final message should be a rating of the comprehension and an overview of the discussion -- pointing out any problems with recall
 - [x] the session regularly expands beyond the set number of questions, and has a tendency to expand beyond the core concept, asking for more and more information, which is a problem for the user and the model, as it can lead to confusion and overwhelm. The session should be designed to stay focused on the core concept and not expand indefinitely.
+- [x] starting a session still shows a blank input, there is no prompt for the user to know what to do, and it can be confusing. The session should have a clear prompt or instruction for the user to follow when starting a session, so they know what to expect and how to proceed.
+- [x] the final report does not include a suggested rating

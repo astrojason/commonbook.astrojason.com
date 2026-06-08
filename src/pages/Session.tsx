@@ -229,9 +229,10 @@ export default function SessionPage() {
       const isComplete = accumulated.includes('SESSION_COMPLETE')
       const ratingMatch = accumulated.match(/RATING:([1-5])/)
       const suggestedRating = ratingMatch ? parseInt(ratingMatch[1], 10) : undefined
+      const ratingLabels = ['cold', 'cool', 'warm', 'hot', 'solid']
       const displayContent = accumulated
-        .replace(/\nRATING:[1-5]\s*/g, '\n')
-        .replace(/RATING:[1-5]\s*/g, '')
+        .replace(/\nRATING:([1-5])\s*/g, (_, r) => `\n\nSuggested rating: ${ratingLabels[parseInt(r, 10) - 1]}`)
+        .replace(/RATING:([1-5])\s*/g, (_, r) => `Suggested rating: ${ratingLabels[parseInt(r, 10) - 1]}`)
         .replace(/\nSESSION_COMPLETE\s*$/, '')
         .replace(/SESSION_COMPLETE\s*$/, '')
         .trim()
@@ -352,7 +353,7 @@ export default function SessionPage() {
             <div className="px-5 md:px-10 py-5 font-mono text-[13px] md:text-[14px] leading-[1.7] md:leading-[1.75] space-y-4 md:space-y-5 flex-1 md:overflow-y-auto md:thinbar">
               <div className="md:max-w-[760px]">
                 {messages.length === 0 && !streaming && (
-                  <div className="text-dim">Waiting for your first message…</div>
+                  <div className="text-dim">Explain in your own words {note.title}…</div>
                 )}
 
                 {messages.map((m, i) => (
