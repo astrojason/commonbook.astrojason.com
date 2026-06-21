@@ -42,6 +42,7 @@ const mockSession: SessionType = {
   messages: [{ role: 'assistant', content: 'Q1?' }],
   completed_at: null,
   self_rating: null,
+    suggested_rating: null,
 }
 
 const mockNote: Note = {

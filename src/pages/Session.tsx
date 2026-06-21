@@ -38,7 +38,24 @@ export default function SessionPage() {
         setSession(sess)
         setNote(n)
         setMessages(sess.messages)
-        if (sess.completed_at) setDone(true)
+        if (sess.completed_at) {
+          setDone(true)
+          if (sess.suggested_rating != null) {
+            setSuggestedRating(sess.suggested_rating)
+          } else {
+            // Fallback: extract from stored message content for sessions
+            // completed before suggested_rating was persisted to Firestore
+            const ratingLabels = ['cold', 'cool', 'warm', 'hot', 'solid']
+            const lastAssistant = [...sess.messages].reverse().find(m => m.role === 'assistant')
+            if (lastAssistant) {
+              const match = lastAssistant.content.match(/suggested rating:\s*(\w+)/i)
+              if (match) {
+                const idx = ratingLabels.indexOf(match[1].toLowerCase())
+                if (idx !== -1) setSuggestedRating(idx + 1)
+              }
+            }
+          }
+        }
         if (used !== null && used >= DAILY_LIMIT) {
           setTokenGate(true)
           setTokenGateCount(used)
@@ -247,8 +264,11 @@ export default function SessionPage() {
       setStreamText('')
       setStreaming(false)
 
-      const updateData: { messages: Message[]; completed_at?: Date } = { messages: finalMessages }
-      if (isComplete) updateData.completed_at = new Date()
+      const updateData: { messages: Message[]; completed_at?: Date; suggested_rating?: number } = { messages: finalMessages }
+      if (isComplete) {
+        updateData.completed_at = new Date()
+        if (suggestedRating !== undefined) updateData.suggested_rating = suggestedRating
+      }
       await updateSession(session.id, updateData)
 
       if (tokenCount > 0) {

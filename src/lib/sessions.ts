@@ -27,13 +27,14 @@ export async function createSession(noteId: string): Promise<string> {
     messages: [],
     completed_at: null,
     self_rating: null,
+    suggested_rating: null,
   })
   return ref.id
 }
 
 export async function updateSession(
   id: string,
-  data: { messages?: Message[]; completed_at?: Date | null; self_rating?: number | null },
+  data: { messages?: Message[]; completed_at?: Date | null; self_rating?: number | null; suggested_rating?: number | null },
 ): Promise<void> {
   await updateDoc(doc(db, 'sessions', id), { ...data })
 }

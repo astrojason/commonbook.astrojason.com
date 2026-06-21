@@ -28,6 +28,7 @@ export interface Session {
   messages: Message[]
   completed_at: Timestamp | null
   self_rating: number | null
+  suggested_rating: number | null
 }
 
 export interface Stats {

@@ -152,6 +152,7 @@ describe('Dashboard — Begin Session', () => {
       messages: [],
       completed_at: null,
       self_rating: null,
+    suggested_rating: null,
     })
 
     const user = userEvent.setup()

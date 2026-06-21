@@ -245,6 +245,7 @@ describe('NoteDetail — past sessions', () => {
         messages: [{ role: 'assistant', content: 'Q1?' }, { role: 'user', content: 'A1' }],
         completed_at: mockTs(new Date('2026-06-01T10:00:00')),
         self_rating: 3,
+        suggested_rating: null,
       },
     ])
 
@@ -265,6 +266,7 @@ describe('NoteDetail — past sessions', () => {
         ],
         completed_at: mockTs(new Date('2026-06-01T10:00:00')),
         self_rating: null,
+    suggested_rating: null,
       },
     ])
 
@@ -290,6 +292,7 @@ describe('NoteDetail — past sessions', () => {
         messages: [],
         completed_at: mockTs(new Date('2026-06-01T10:00:00')),
         self_rating: 4,
+        suggested_rating: null,
       },
     ])
 
@@ -312,6 +315,7 @@ describe('NoteDetail — start session', () => {
       messages: [],
       completed_at: null,
       self_rating: null,
+    suggested_rating: null,
     }
     vi.mocked(getIncompleteSession).mockResolvedValue(incompleteSession)
 
