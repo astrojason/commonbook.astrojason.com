@@ -35,6 +35,10 @@ function ageLabel(ts: Timestamp): string {
   return `${Math.floor(days / 7)}w`
 }
 
+function reviewedLabel(ts: Timestamp | null): string {
+  return ts ? ageLabel(ts) : 'never'
+}
+
 export default function Library() {
   const navigate = useNavigate()
   const [notes, setNotes] = useState<Note[]>([])
@@ -131,9 +135,10 @@ export default function Library() {
       )}
 
       {/* desktop column header */}
-      <div className="hidden md:grid md:grid-cols-[1fr_160px_180px] md:gap-4 md:px-10 md:py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
+      <div className="hidden md:grid md:grid-cols-[1fr_120px_120px_160px] md:gap-4 md:px-10 md:py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
         <span>title</span>
-        <span>updated</span>
+        <span>added</span>
+        <span>reviewed</span>
         <span>strength</span>
       </div>
       <div className="hidden md:block"><Rule /></div>
@@ -149,14 +154,18 @@ export default function Library() {
             <li key={n.id}>
               <button
                 onClick={() => navigate(`/note/${n.id}`)}
-                className="w-full text-left px-5 md:px-10 py-4 hover:bg-ink-2 transition-colors md:grid md:grid-cols-[1fr_160px_180px] md:gap-4 md:items-center"
+                className="w-full text-left px-5 md:px-10 py-4 hover:bg-ink-2 transition-colors md:grid md:grid-cols-[1fr_120px_120px_160px] md:gap-4 md:items-center"
               >
                 {/* Title + tag: flex layout on mobile, grid cell on desktop */}
                 <div className="flex items-start justify-between gap-4 md:block">
                   <div className="min-w-0">
                     <Tag>{n.tag}</Tag>
                     <div className="mt-1 font-sans text-[15px] leading-snug md:truncate">{n.title}</div>
-                    {/* strength: visible on mobile inline, hidden on desktop (shown in grid col 3) */}
+                    {/* dates: visible on mobile inline, hidden on desktop (shown in grid cols 2-3) */}
+                    <div className="mt-2 md:hidden font-mono text-[11px] text-dim uppercase tracking-wider">
+                      added {ageLabel(n.created_at)} · reviewed {reviewedLabel(n.last_reviewed_at)}
+                    </div>
+                    {/* strength: visible on mobile inline, hidden on desktop (shown in grid col 4) */}
                     <div className="mt-2 md:hidden">
                       {n.last_rating != null && <StrengthBar value={n.last_rating} />}
                     </div>
@@ -165,12 +174,17 @@ export default function Library() {
                   <div className="font-mono text-[11px] text-dim pt-1 md:hidden">→</div>
                 </div>
 
-                {/* updated: hidden on mobile (no room), visible on desktop as grid col 2 */}
+                {/* added: hidden on mobile (no room), visible on desktop as grid col 2 */}
                 <span className="hidden md:block font-mono text-[12px] text-muted uppercase tracking-wider">
                   {ageLabel(n.created_at)}
                 </span>
 
-                {/* strength: hidden on mobile (shown inline above), visible on desktop as grid col 3 */}
+                {/* reviewed: hidden on mobile (no room), visible on desktop as grid col 3 */}
+                <span className="hidden md:block font-mono text-[12px] text-muted uppercase tracking-wider">
+                  {reviewedLabel(n.last_reviewed_at)}
+                </span>
+
+                {/* strength: hidden on mobile (shown inline above), visible on desktop as grid col 4 */}
                 <div className="hidden md:block">
                   {n.last_rating != null
                     ? <StrengthBar value={n.last_rating} />

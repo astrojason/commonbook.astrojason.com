@@ -27,6 +27,7 @@ export async function createNote(input: CreateNoteInput): Promise<string> {
     ...input,
     created_at: serverTimestamp(),
     next_review_at: Timestamp.fromDate(nextReview),
+    last_reviewed_at: null,
     interval_days: 1,
     easiness_factor: 2.5,
     session_count: 0,
@@ -57,6 +58,7 @@ export async function updateNoteAfterRating(id: string, sm2: SM2Result, rating: 
     session_count: sm2.sessionCount,
     next_review_at: Timestamp.fromDate(sm2.nextReviewAt),
     last_rating: rating,
+    last_reviewed_at: serverTimestamp(),
   })
 }
 

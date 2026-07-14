@@ -40,6 +40,7 @@ const mockNote: Note = {
   application: 'Think of a frog.',
   created_at: mockTs(BASE_DATE),
   next_review_at: mockTs(FUTURE_DATE),
+  last_reviewed_at: null,
   interval_days: 6,
   easiness_factor: 2.5,
   session_count: 1,

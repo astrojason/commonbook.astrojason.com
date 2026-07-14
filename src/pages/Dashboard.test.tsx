@@ -28,6 +28,7 @@ function makeNote(overrides: Partial<Note> = {}): Note {
     application: 'Use it.',
     created_at: mockTs(new Date('2026-05-01')),
     next_review_at: mockTs(past),
+    last_reviewed_at: null,
     interval_days: 1,
     easiness_factor: 2.5,
     session_count: 0,

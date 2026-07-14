@@ -15,6 +15,7 @@ export interface Note {
   application: string
   created_at: Timestamp
   next_review_at: Timestamp
+  last_reviewed_at: Timestamp | null
   interval_days: number
   easiness_factor: number
   session_count: number

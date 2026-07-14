@@ -21,6 +21,7 @@ function makeNote(overrides: Partial<Note>): Note {
     application: 'Apply it.',
     created_at: mockTs(new Date('2026-05-01')),
     next_review_at: mockTs(new Date('2026-06-01')),
+    last_reviewed_at: null,
     interval_days: 1,
     easiness_factor: 2.5,
     session_count: 0,
@@ -138,6 +139,32 @@ describe('Library — tag filter', () => {
     await user.click(screen.getByRole('button', { name: /^all$/i }))
 
     expect(screen.getByText('Beta Title')).toBeInTheDocument()
+  })
+})
+
+describe('Library — review date', () => {
+  it('shows "never" for a note that has not been reviewed', async () => {
+    mockSubscribe([makeNote({ id: 'a', title: 'Alpha Title', last_reviewed_at: null })])
+    renderLibrary()
+
+    expect(await screen.findByText('Alpha Title')).toBeInTheDocument()
+    expect(screen.getAllByText(/never/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows a relative age for a note that has been reviewed', async () => {
+    mockSubscribe([
+      makeNote({
+        id: 'a',
+        title: 'Alpha Title',
+        last_reviewed_at: mockTs(new Date('2026-06-01')),
+      }),
+    ])
+    renderLibrary()
+
+    expect(await screen.findByText('Alpha Title')).toBeInTheDocument()
+    // created_at defaults to 2026-05-01, last_reviewed_at is 2026-06-01 — both should render distinctly
+    expect(screen.getAllByText(/added/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/reviewed/i).length).toBeGreaterThan(0)
   })
 })
 
