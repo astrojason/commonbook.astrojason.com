@@ -9,10 +9,16 @@ import { StrengthBar } from '../components/StrengthBar'
 import type { Note, Stats } from '../types'
 import type { Timestamp } from 'firebase/firestore'
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
 function daysBetween(a: Date, b: Date): number {
   const da = new Date(a); da.setHours(0, 0, 0, 0)
   const db = new Date(b); db.setHours(0, 0, 0, 0)
   return Math.floor((da.getTime() - db.getTime()) / 86400000)
+}
+
+function shortDate(d: Date): string {
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`
 }
 
 function overdueDays(ts: Timestamp): number {
@@ -31,10 +37,7 @@ function reviewedLabel(ts: Timestamp | null): string {
 }
 
 function nextReviewLabel(ts: Timestamp): string {
-  const days = daysBetween(ts.toDate(), new Date())
-  if (days <= 0) return 'next today'
-  if (days === 1) return 'next tomorrow'
-  return `next +${days}d`
+  return `next ${shortDate(ts.toDate())}`
 }
 
 function pad2(n: number) {
@@ -43,8 +46,7 @@ function pad2(n: number) {
 
 function formatDate(d: Date): string {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  return `${days[d.getDay()]} · ${d.getDate()} ${months[d.getMonth()]}`
+  return `${days[d.getDay()]} · ${shortDate(d)}`
 }
 
 export default function Dashboard() {
@@ -242,15 +244,15 @@ export default function Dashboard() {
                           <div className="mt-[2px] md:mt-1 flex items-center gap-3">
                             <Tag>{n.tag}</Tag>
                             <span className="font-mono text-[11px] text-dim">·</span>
-                            <span className="font-mono text-[11px] text-dim">
+                            <span className="font-mono text-[11px] text-muted">
                               added {ageLabel(n.created_at)}
                             </span>
                             <span className="font-mono text-[11px] text-dim">·</span>
-                            <span className="font-mono text-[11px] text-dim">
+                            <span className="font-mono text-[11px] text-muted">
                               {reviewedLabel(n.last_reviewed_at)}
                             </span>
                             <span className="font-mono text-[11px] text-dim">·</span>
-                            <span className="font-mono text-[11px] text-dim">
+                            <span className="font-mono text-[11px] text-muted">
                               {nextReviewLabel(n.next_review_at)}
                             </span>
                           </div>

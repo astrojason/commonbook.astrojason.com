@@ -89,6 +89,13 @@ describe('NoteDetail — display', () => {
     renderNoteDetail()
     expect(await screen.findByText(/note not found/i)).toBeInTheDocument()
   })
+
+  it('shows the next review as an actual date rather than a relative offset', async () => {
+    renderNoteDetail()
+    await screen.findByText('Markov chains')
+    // FUTURE_DATE is 2026-06-10
+    expect(screen.getAllByText(/next 10 Jun/i).length).toBeGreaterThan(0)
+  })
 })
 
 describe('NoteDetail — self-rating lock', () => {

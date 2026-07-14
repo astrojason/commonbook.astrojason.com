@@ -235,16 +235,14 @@ describe('Dashboard — recent notes', () => {
     expect(screen.getByText(/reviewed 3d ago/i)).toBeInTheDocument()
   })
 
-  it('shows the next scheduled review date for a recent note', async () => {
-    const nextReview = new Date(Date.now() + 5 * 86400000)
-    nextReview.setHours(0, 0, 0, 0)
+  it('shows the next scheduled review as an actual date for a recent note', async () => {
     mockSubscribe([
-      makeNote({ id: 'n1', title: 'Scheduled Note', next_review_at: mockTs(nextReview) }),
+      makeNote({ id: 'n1', title: 'Scheduled Note', next_review_at: mockTs(new Date(2026, 6, 20)) }),
     ])
     renderDashboard()
 
     expect(await screen.findByText('Scheduled Note')).toBeInTheDocument()
-    expect(screen.getByText(/next \+5d/i)).toBeInTheDocument()
+    expect(screen.getByText(/next 20 Jul/i)).toBeInTheDocument()
   })
 })
 

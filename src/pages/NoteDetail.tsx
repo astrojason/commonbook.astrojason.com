@@ -24,20 +24,11 @@ function formatCaptured(ts: Timestamp): string {
   return `${y}.${m}.${day} · ${h}:${min}`
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
 function formatNextReview(ts: Timestamp): string {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const target = new Date(ts.toDate())
-  target.setHours(0, 0, 0, 0)
-
-  if (target <= today) return 'today'
-
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  if (target.getTime() === tomorrow.getTime()) return 'tomorrow'
-
-  const diff = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  return `+${diff}d`
+  const d = ts.toDate()
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`
 }
 
 function isDue(ts: Timestamp): boolean {

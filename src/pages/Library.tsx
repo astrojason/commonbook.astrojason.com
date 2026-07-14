@@ -162,7 +162,7 @@ export default function Library() {
                     <Tag>{n.tag}</Tag>
                     <div className="mt-1 font-sans text-[15px] leading-snug md:truncate">{n.title}</div>
                     {/* dates: visible on mobile inline, hidden on desktop (shown in grid cols 2-3) */}
-                    <div className="mt-2 md:hidden font-mono text-[11px] text-dim uppercase tracking-wider">
+                    <div className="mt-2 md:hidden font-mono text-[11px] text-muted uppercase tracking-wider">
                       added {ageLabel(n.created_at)} · reviewed {reviewedLabel(n.last_reviewed_at)}
                     </div>
                     {/* strength: visible on mobile inline, hidden on desktop (shown in grid col 4) */}
