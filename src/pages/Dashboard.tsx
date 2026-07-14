@@ -26,6 +26,10 @@ function ageLabel(ts: Timestamp): string {
   return `${days}d ago`
 }
 
+function reviewedLabel(ts: Timestamp | null): string {
+  return ts ? `reviewed ${ageLabel(ts)}` : 'never reviewed'
+}
+
 function pad2(n: number) {
   return String(n).padStart(2, '0')
 }
@@ -232,7 +236,11 @@ export default function Dashboard() {
                             <Tag>{n.tag}</Tag>
                             <span className="font-mono text-[11px] text-dim">·</span>
                             <span className="font-mono text-[11px] text-dim">
-                              {ageLabel(n.created_at)}
+                              added {ageLabel(n.created_at)}
+                            </span>
+                            <span className="font-mono text-[11px] text-dim">·</span>
+                            <span className="font-mono text-[11px] text-dim">
+                              {reviewedLabel(n.last_reviewed_at)}
                             </span>
                           </div>
                         </div>

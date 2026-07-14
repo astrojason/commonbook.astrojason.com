@@ -208,6 +208,32 @@ describe('Dashboard — recent notes', () => {
     expect(await screen.findByText('Note 5')).toBeInTheDocument()
     expect(screen.queryByText('Note 0')).not.toBeInTheDocument()
   })
+
+  it('shows "never reviewed" for a recent note with no last_reviewed_at', async () => {
+    mockSubscribe([
+      makeNote({ id: 'n1', title: 'Fresh Note', next_review_at: mockTs(future), last_reviewed_at: null }),
+    ])
+    renderDashboard()
+
+    expect(await screen.findByText('Fresh Note')).toBeInTheDocument()
+    expect(screen.getByText(/never reviewed/i)).toBeInTheDocument()
+  })
+
+  it('shows the last reviewed age for a recent note that has been reviewed', async () => {
+    const reviewedAt = new Date(Date.now() - 3 * 86400000)
+    mockSubscribe([
+      makeNote({
+        id: 'n1',
+        title: 'Reviewed Note',
+        next_review_at: mockTs(future),
+        last_reviewed_at: mockTs(reviewedAt),
+      }),
+    ])
+    renderDashboard()
+
+    expect(await screen.findByText('Reviewed Note')).toBeInTheDocument()
+    expect(screen.getByText(/reviewed 3d ago/i)).toBeInTheDocument()
+  })
 })
 
 describe('Dashboard — beginSession error', () => {
