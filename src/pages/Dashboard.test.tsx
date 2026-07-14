@@ -234,6 +234,18 @@ describe('Dashboard — recent notes', () => {
     expect(await screen.findByText('Reviewed Note')).toBeInTheDocument()
     expect(screen.getByText(/reviewed 3d ago/i)).toBeInTheDocument()
   })
+
+  it('shows the next scheduled review date for a recent note', async () => {
+    const nextReview = new Date(Date.now() + 5 * 86400000)
+    nextReview.setHours(0, 0, 0, 0)
+    mockSubscribe([
+      makeNote({ id: 'n1', title: 'Scheduled Note', next_review_at: mockTs(nextReview) }),
+    ])
+    renderDashboard()
+
+    expect(await screen.findByText('Scheduled Note')).toBeInTheDocument()
+    expect(screen.getByText(/next \+5d/i)).toBeInTheDocument()
+  })
 })
 
 describe('Dashboard — beginSession error', () => {

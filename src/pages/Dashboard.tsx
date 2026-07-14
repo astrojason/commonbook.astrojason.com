@@ -30,6 +30,13 @@ function reviewedLabel(ts: Timestamp | null): string {
   return ts ? `reviewed ${ageLabel(ts)}` : 'never reviewed'
 }
 
+function nextReviewLabel(ts: Timestamp): string {
+  const days = daysBetween(ts.toDate(), new Date())
+  if (days <= 0) return 'next today'
+  if (days === 1) return 'next tomorrow'
+  return `next +${days}d`
+}
+
 function pad2(n: number) {
   return String(n).padStart(2, '0')
 }
@@ -241,6 +248,10 @@ export default function Dashboard() {
                             <span className="font-mono text-[11px] text-dim">·</span>
                             <span className="font-mono text-[11px] text-dim">
                               {reviewedLabel(n.last_reviewed_at)}
+                            </span>
+                            <span className="font-mono text-[11px] text-dim">·</span>
+                            <span className="font-mono text-[11px] text-dim">
+                              {nextReviewLabel(n.next_review_at)}
                             </span>
                           </div>
                         </div>
