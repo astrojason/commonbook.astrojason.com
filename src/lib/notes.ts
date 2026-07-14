@@ -14,8 +14,26 @@ import { db } from '../firebase'
 import type { Note, CreateNoteInput } from '../types'
 import type { SM2Result } from './sm2'
 
+// Notes rated before `last_reviewed_at` existed have no value for it.
+// Approximate it from next_review_at - interval_days, since SM-2 sets
+// next_review_at to (review date + interval_days) at rating time.
+export function resolveLastReviewedAt(note: {
+  last_reviewed_at: Timestamp | null
+  session_count: number
+  next_review_at: Timestamp
+  interval_days: number
+}): Timestamp | null {
+  if (note.last_reviewed_at != null) return note.last_reviewed_at
+  if (note.session_count === 0) return null
+  const approx = note.next_review_at.toDate()
+  approx.setDate(approx.getDate() - note.interval_days)
+  return Timestamp.fromDate(approx)
+}
+
 function toNote(id: string, data: Record<string, unknown>): Note {
-  return { id, ...data } as Note
+  const note = { id, ...data } as Note
+  note.last_reviewed_at = resolveLastReviewedAt(note)
+  return note
 }
 
 export async function createNote(input: CreateNoteInput): Promise<string> {
