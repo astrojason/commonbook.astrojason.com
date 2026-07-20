@@ -1,23 +1,26 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { subscribeToUsers } from '../lib/users'
+import { Spinner } from '../components/Spinner'
+import { useToast } from '../contexts/ToastContext'
 import type { AppUser } from '../lib/users'
 
 export default function Admin() {
   const { user } = useAuth()
+  const { showToast } = useToast()
   const [users, setUsers] = useState<AppUser[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
-  const [pendingUid, setPendingUid] = useState<string | null>(null)
+  const [pending, setPending] = useState<{ uid: string; role: string } | null>(null)
 
   useEffect(() => {
     return subscribeToUsers(setUsers, err => setLoadError(err.message))
   }, [])
 
-  async function changeRole(targetUid: string, role: string) {
+  async function changeRole(targetUid: string, role: string, successLabel: string, email: string | null) {
     if (!user) return
     setActionError(null)
-    setPendingUid(targetUid)
+    setPending({ uid: targetUid, role })
     try {
       const token = await user.getIdToken()
       const res = await fetch('/api/admin/set-role', {
@@ -29,10 +32,11 @@ export default function Admin() {
         const data = await res.json().catch(() => ({}))
         throw new Error((data as { error?: string }).error || `Request failed (${res.status})`)
       }
+      showToast(successLabel, email ?? targetUid)
     } catch (err) {
       setActionError(err instanceof Error ? err.message : String(err))
     } finally {
-      setPendingUid(null)
+      setPending(null)
     }
   }
 
@@ -68,38 +72,46 @@ export default function Admin() {
             <div className="flex gap-2 shrink-0">
               {u.role === 'PENDING' && (
                 <button
-                  onClick={() => changeRole(u.uid, 'USER')}
-                  disabled={pendingUid === u.uid}
+                  onClick={() => changeRole(u.uid, 'USER', 'User approved', u.email)}
+                  disabled={pending?.uid === u.uid}
                   className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-1 border border-rule-2 hover:border-accent transition-colors disabled:opacity-50"
                 >
-                  Approve
+                  {pending?.uid === u.uid && pending.role === 'USER'
+                    ? <span className="inline-flex items-center gap-2"><Spinner />Approving…</span>
+                    : 'Approve'}
                 </button>
               )}
               {u.role === 'USER' && (
                 <>
                   <button
-                    onClick={() => changeRole(u.uid, 'ADMIN')}
-                    disabled={pendingUid === u.uid}
+                    onClick={() => changeRole(u.uid, 'ADMIN', 'Promoted to admin', u.email)}
+                    disabled={pending?.uid === u.uid}
                     className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-1 border border-rule-2 hover:border-accent transition-colors disabled:opacity-50"
                   >
-                    Promote to admin
+                    {pending?.uid === u.uid && pending.role === 'ADMIN'
+                      ? <span className="inline-flex items-center gap-2"><Spinner />Promoting…</span>
+                      : 'Promote to admin'}
                   </button>
                   <button
-                    onClick={() => changeRole(u.uid, 'PENDING')}
-                    disabled={pendingUid === u.uid}
+                    onClick={() => changeRole(u.uid, 'PENDING', 'Access revoked', u.email)}
+                    disabled={pending?.uid === u.uid}
                     className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-1 border border-rule-2 hover:border-accent transition-colors disabled:opacity-50"
                   >
-                    Revoke access
+                    {pending?.uid === u.uid && pending.role === 'PENDING'
+                      ? <span className="inline-flex items-center gap-2"><Spinner />Revoking…</span>
+                      : 'Revoke access'}
                   </button>
                 </>
               )}
               {u.role === 'ADMIN' && (
                 <button
-                  onClick={() => changeRole(u.uid, 'USER')}
-                  disabled={pendingUid === u.uid}
+                  onClick={() => changeRole(u.uid, 'USER', 'Demoted to user', u.email)}
+                  disabled={pending?.uid === u.uid}
                   className="font-mono text-[11px] uppercase tracking-[0.14em] px-3 py-1 border border-rule-2 hover:border-accent transition-colors disabled:opacity-50"
                 >
-                  Demote to user
+                  {pending?.uid === u.uid && pending.role === 'USER'
+                    ? <span className="inline-flex items-center gap-2"><Spinner />Demoting…</span>
+                    : 'Demote to user'}
                 </button>
               )}
               {u.role === 'SUPERADMIN' && (

@@ -4,12 +4,14 @@ import { CaptureForm } from '../components/CaptureForm'
 import { createNote, getNoteById, subscribeToNotes, updateNote } from '../lib/notes'
 import { incrementStats } from '../lib/stats'
 import { getUniqueTags } from '../lib/tags'
+import { useToast } from '../contexts/ToastContext'
 import type { CreateNoteInput, Note } from '../types'
 
 export default function Capture() {
   const [searchParams] = useSearchParams()
   const location = useLocation()
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const editId = searchParams.get('edit')
   const statePrefill = (location.state as { prefill?: Partial<CreateNoteInput> } | null)?.prefill
 
@@ -59,12 +61,14 @@ export default function Capture() {
     try {
       if (editId) {
         await Promise.race([updateNote(editId, values), timeout])
+        showToast('Note updated', values.title)
         navigate(`/note/${editId}`)
       } else {
         const id = await Promise.race([createNote(values), timeout])
         incrementStats({ total_notes: 1 }).catch(err => {
           console.error('Stats increment failed:', err)
         })
+        showToast('Note created', values.title)
         navigate(`/note/${id}`)
       }
     } catch (err) {

@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react'
 import { Rule } from './Rule'
 import { Chip } from './Chip'
 import { MarkdownBody } from './MarkdownBody'
+import { Spinner } from './Spinner'
 import type { CreateNoteInput } from '../types'
 
 interface CaptureFormProps {
@@ -245,7 +246,9 @@ export function CaptureForm({
               disabled={isSubmitting}
               className="font-mono text-[13px] uppercase tracking-[0.14em] px-4 py-3 bg-accent text-ink disabled:opacity-50 whitespace-nowrap shrink-0"
             >
-              {isSubmitting ? 'Saving…' : submitLabel}
+              {isSubmitting
+                ? <span className="inline-flex items-center gap-2"><Spinner />Saving…</span>
+                : submitLabel}
             </button>
             <button
               type="button"

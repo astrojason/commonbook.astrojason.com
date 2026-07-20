@@ -12,6 +12,10 @@ import {
 } from '../lib/discover'
 import { Chip } from '../components/Chip'
 import { Tag } from '../components/Tag'
+import { Spinner } from '../components/Spinner'
+import { useToast } from '../contexts/ToastContext'
+
+type BusyAction = 'skip' | 'promote' | 'paste' | null
 
 function domainOf(url: string): string {
   try {
@@ -24,6 +28,7 @@ function domainOf(url: string): string {
 export default function Discover() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   const [settingsLoading, setSettingsLoading] = useState(true)
   const [articlesAppUid, setArticlesAppUid] = useState<string | null>(null)
@@ -39,7 +44,8 @@ export default function Discover() {
   const [category, setCategory] = useState<string | null>(null)
 
   const [actionError, setActionError] = useState<string | null>(null)
-  const [isBusy, setIsBusy] = useState(false)
+  const [busyAction, setBusyAction] = useState<BusyAction>(null)
+  const isBusy = busyAction !== null
   const [manualPasteFor, setManualPasteFor] = useState<number | null>(null)
   const [pasteText, setPasteText] = useState('')
 
@@ -88,15 +94,16 @@ export default function Discover() {
   async function handleSkip() {
     if (!current || !user || !articlesAppUid) return
     setActionError(null)
-    setIsBusy(true)
+    setBusyAction('skip')
     try {
       const token = await user.getIdToken()
       await markArticleRead(token, articlesAppUid, current.id)
+      showToast('Article skipped', current.title)
       setArticles(prev => prev.filter(a => a.id !== current.id))
     } catch (err) {
       setActionError(err instanceof Error ? err.message : String(err))
     } finally {
-      setIsBusy(false)
+      setBusyAction(null)
     }
   }
 
@@ -106,6 +113,7 @@ export default function Discover() {
       const token = await user.getIdToken()
       await markArticleRead(token, articlesAppUid, article.id)
     }
+    showToast('Article promoted', article.title)
     navigate('/capture', {
       state: {
         prefill: {
@@ -123,7 +131,7 @@ export default function Discover() {
   async function handlePromote() {
     if (!current || !user) return
     setActionError(null)
-    setIsBusy(true)
+    setBusyAction('promote')
     try {
       let content = current.content
       if (!content) {
@@ -139,14 +147,14 @@ export default function Discover() {
         setActionError(err instanceof Error ? err.message : String(err))
       }
     } finally {
-      setIsBusy(false)
+      setBusyAction(null)
     }
   }
 
   async function handleManualPasteSubmit() {
     if (!current || !user || !pasteText.trim()) return
     setActionError(null)
-    setIsBusy(true)
+    setBusyAction('paste')
     try {
       const token = await user.getIdToken()
       const result = await ingestArticle(token, current.id, { pastedContent: pasteText.trim() })
@@ -156,7 +164,7 @@ export default function Discover() {
     } catch (err) {
       setActionError(err instanceof Error ? err.message : String(err))
     } finally {
-      setIsBusy(false)
+      setBusyAction(null)
     }
   }
 
@@ -248,7 +256,9 @@ export default function Discover() {
                 disabled={isBusy || !pasteText.trim()}
                 className="self-start font-mono text-xs uppercase tracking-[0.18em] px-4 py-2 border border-accent text-accent disabled:opacity-50"
               >
-                Use this text
+                {busyAction === 'paste'
+                  ? <span className="inline-flex items-center gap-2"><Spinner />Adding…</span>
+                  : 'Use this text'}
               </button>
             </div>
           ) : (
@@ -258,14 +268,18 @@ export default function Discover() {
                 disabled={isBusy}
                 className="font-mono text-xs uppercase tracking-[0.18em] px-4 py-2 border border-[var(--rule-2)] text-[var(--muted)] hover:text-[var(--text)] hover:border-[var(--accent)] transition-colors disabled:opacity-50"
               >
-                Skip
+                {busyAction === 'skip'
+                  ? <span className="inline-flex items-center gap-2"><Spinner />Skipping…</span>
+                  : 'Skip'}
               </button>
               <button
                 onClick={handlePromote}
                 disabled={isBusy}
                 className="font-mono text-xs uppercase tracking-[0.18em] px-4 py-2 border border-accent text-accent disabled:opacity-50"
               >
-                Promote →
+                {busyAction === 'promote'
+                  ? <span className="inline-flex items-center gap-2"><Spinner />Promoting…</span>
+                  : 'Promote →'}
               </button>
             </div>
           )}

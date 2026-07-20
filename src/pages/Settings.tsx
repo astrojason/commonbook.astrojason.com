@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { subscribeToUser, updateUserSettings } from '../lib/users'
+import { Spinner } from '../components/Spinner'
+import { useToast } from '../contexts/ToastContext'
 
 export default function Settings() {
   const { user } = useAuth()
+  const { showToast } = useToast()
   const [articlesAppUid, setArticlesAppUid] = useState('')
   const [keywords, setKeywords] = useState<string[]>([])
   const [newKeyword, setNewKeyword] = useState('')
@@ -46,6 +49,7 @@ export default function Settings() {
         articlesAppUid: articlesAppUid.trim() || null,
         interestKeywords: keywords,
       })
+      showToast('Settings saved', `UID: ${articlesAppUid.trim() || '—'} · ${keywords.length} keyword${keywords.length === 1 ? '' : 's'}`)
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -129,7 +133,9 @@ export default function Settings() {
         disabled={isSubmitting}
         className="self-start font-mono text-xs uppercase tracking-[0.18em] px-6 py-3 border border-[var(--rule-2)] text-[var(--muted)] hover:text-[var(--text)] hover:border-[var(--accent)] transition-colors disabled:opacity-50"
       >
-        Save
+        {isSubmitting
+          ? <span className="inline-flex items-center gap-2"><Spinner />Saving…</span>
+          : 'Save'}
       </button>
     </div>
   )

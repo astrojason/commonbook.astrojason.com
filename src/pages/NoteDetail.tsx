@@ -8,6 +8,8 @@ import { computeSM2 } from '../lib/sm2'
 import { Rule } from '../components/Rule'
 import { StrengthBar } from '../components/StrengthBar'
 import { MarkdownBody } from '../components/MarkdownBody'
+import { Spinner } from '../components/Spinner'
+import { useToast } from '../contexts/ToastContext'
 import type { Note, Session } from '../types'
 
 const TIERS = ['cold', 'cool', 'warm', 'hot', 'solid'] as const
@@ -41,6 +43,7 @@ export default function NoteDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
+  const { showToast } = useToast()
   const sessionComplete = location.state?.sessionComplete === true
   const sessionId = location.state?.sessionId as string | undefined
   const suggestedRating = location.state?.suggestedRating as number | undefined
@@ -48,6 +51,7 @@ export default function NoteDetail() {
   const [note, setNote] = useState<Note | null>(null)
   const [loading, setLoading] = useState(true)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [rating, setRating] = useState<number | null>(suggestedRating ?? null)
   const [submitting, setSubmitting] = useState(false)
   const [startingSession, setStartingSession] = useState(false)
@@ -80,11 +84,16 @@ export default function NoteDetail() {
 
   async function handleDelete() {
     if (!id) return
+    setDeleting(true)
+    setError(null)
     try {
       await Promise.race([softDeleteNote(id), makeTimeout()])
+      showToast('Note deleted', note?.title)
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -126,6 +135,7 @@ export default function NoteDetail() {
         total_sessions: 1,
         ...(rating >= 3 ? { passing_sessions: 1 } : {}),
       }).catch(err => console.error('Stats increment failed:', err))
+      showToast('Review logged', `${TIERS[rating - 1]} · next review ${NEXT_REVIEW_LABELS[rating - 1]}`)
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -264,7 +274,9 @@ export default function NoteDetail() {
                 disabled={startingSession}
                 className="flex-1 md:flex-none font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-accent text-accent hover:bg-ink-2 disabled:opacity-50"
               >
-                {startingSession ? 'opening…' : '→ start session'}
+                {startingSession
+                  ? <span className="inline-flex items-center gap-2"><Spinner />opening…</span>
+                  : '→ start session'}
               </button>
               <button
                 onClick={() => navigate(`/capture?edit=${id}`)}
@@ -276,13 +288,17 @@ export default function NoteDetail() {
                 <>
                   <button
                     onClick={handleDelete}
-                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-accent text-accent"
+                    disabled={deleting}
+                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-accent text-accent disabled:opacity-50"
                   >
-                    confirm
+                    {deleting
+                      ? <span className="inline-flex items-center gap-2"><Spinner />deleting…</span>
+                      : 'confirm'}
                   </button>
                   <button
                     onClick={() => setConfirmingDelete(false)}
-                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-2 py-3 text-dim"
+                    disabled={deleting}
+                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-2 py-3 text-dim disabled:opacity-50"
                   >
                     cancel
                   </button>
@@ -463,7 +479,9 @@ export default function NoteDetail() {
                     className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-2 border disabled:border-rule disabled:text-dim"
                     style={{ borderColor: rating != null ? 'var(--accent)' : undefined, color: rating != null ? 'var(--accent)' : undefined }}
                   >
-                    {submitting ? 'saving…' : 'Log review →'}
+                    {submitting
+                      ? <span className="inline-flex items-center gap-2"><Spinner />saving…</span>
+                      : 'Log review →'}
                   </button>
                 </div>
               </div>
