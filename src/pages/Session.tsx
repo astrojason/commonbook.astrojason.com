@@ -382,7 +382,7 @@ export default function SessionPage() {
                       className="font-mono text-[12px] uppercase tracking-[0.18em]"
                       style={{ color: m.role === 'user' ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}
                     >
-                      {m.role === 'user' ? '> me' : 'recall'}
+                      {m.role === 'user' ? '> me' : 'commonbook'}
                     </div>
                     <div className="mt-[2px]">{m.content}</div>
                   </div>
@@ -391,7 +391,7 @@ export default function SessionPage() {
                 {streaming && (
                   <div>
                     <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-muted" style={{ fontWeight: 500 }}>
-                      recall
+                      commonbook
                     </div>
                     <div className="mt-[2px]">
                       {streamText || (

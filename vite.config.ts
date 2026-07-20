@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: null,
       manifest: {
-        name: 'Recall',
-        short_name: 'Recall',
+        name: 'commonbook',
+        short_name: 'commonbook',
         description: 'Personal knowledge retention app',
         theme_color: '#0E0C09',
         background_color: '#0E0C09',

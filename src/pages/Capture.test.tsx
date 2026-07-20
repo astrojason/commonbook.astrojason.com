@@ -140,6 +140,63 @@ describe('Capture — create mode', () => {
   })
 })
 
+describe('Capture — Discover prefill via router state', () => {
+  it('pre-fills the form from location.state.prefill without an async load', () => {
+    render(
+      <MemoryRouter initialEntries={[{
+        pathname: '/capture',
+        state: {
+          prefill: {
+            title: 'Prefilled title',
+            tag: 'astronomy',
+            source_url: 'https://example.com/article',
+            what_it_said: 'Prefilled what',
+            why_it_matters: 'Prefilled why',
+            application: 'Prefilled application',
+          },
+        },
+      }]}>
+        <Routes>
+          <Route path="/capture" element={<Capture />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByDisplayValue('Prefilled title')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Prefilled what')).toBeInTheDocument()
+  })
+
+  it('lets the user save the prefilled draft as a new note', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={[{
+        pathname: '/capture',
+        state: {
+          prefill: {
+            title: 'Prefilled title',
+            tag: 'astronomy',
+            source_url: 'https://example.com/article',
+            what_it_said: 'Prefilled what',
+            why_it_matters: 'Prefilled why',
+            application: 'Prefilled application',
+          },
+        },
+      }]}>
+        <Routes>
+          <Route path="/capture" element={<Capture />} />
+          <Route path="/note/:id" element={<div>note-page</div>} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: /save entry/i }))
+
+    await waitFor(() => {
+      expect(createNote).toHaveBeenCalledWith(expect.objectContaining({ title: 'Prefilled title' }))
+    })
+  })
+})
+
 describe('Capture — edit mode', () => {
   beforeEach(() => {
     vi.mocked(getNoteById).mockResolvedValue(mockNote as Note)

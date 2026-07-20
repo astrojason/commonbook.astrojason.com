@@ -23,7 +23,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-ink flex flex-col items-center justify-center gap-8">
       <h1 className="font-mono text-[var(--text)] text-2xl tracking-widest uppercase">
-        Recall
+        commonbook
       </h1>
       <button
         onClick={handleSignIn}

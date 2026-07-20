@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { CaptureForm } from '../components/CaptureForm'
 import { createNote, getNoteById, subscribeToNotes, updateNote } from '../lib/notes'
 import { incrementStats } from '../lib/stats'
@@ -8,11 +8,13 @@ import type { CreateNoteInput, Note } from '../types'
 
 export default function Capture() {
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const navigate = useNavigate()
   const editId = searchParams.get('edit')
+  const statePrefill = (location.state as { prefill?: Partial<CreateNoteInput> } | null)?.prefill
 
   const [notes, setNotes] = useState<Note[]>([])
-  const [initialValues, setInitialValues] = useState<Partial<CreateNoteInput> | undefined>()
+  const [initialValues, setInitialValues] = useState<Partial<CreateNoteInput> | undefined>(statePrefill)
   const [loading, setLoading] = useState(!!editId)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)

@@ -2,14 +2,18 @@ import { useEffect, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { subscribeToNotes } from '../lib/notes'
+import { isAdminRole } from '../lib/roles'
 import { Rule } from './Rule'
 
 const NAV = [
-  { label: 'dash',    desktopLabel: 'Dashboard', key: 'D', path: '/',        active: (p: string) => p === '/' },
-  { label: 'capture', desktopLabel: 'Capture',   key: 'C', path: '/capture', active: (p: string) => p.startsWith('/capture') },
-  { label: 'note',    desktopLabel: 'Note',       key: 'N', path: null,       active: (p: string) => p.startsWith('/note/') },
-  { label: 'session', desktopLabel: 'Session',    key: 'S', path: null,       active: (p: string) => p.startsWith('/session/') },
-  { label: 'library', desktopLabel: 'Library',    key: 'L', path: '/library', active: (p: string) => p.startsWith('/library') },
+  { label: 'dash',    desktopLabel: 'Dashboard', key: 'D', path: '/',        active: (p: string) => p === '/',                adminOnly: false },
+  { label: 'capture', desktopLabel: 'Capture',   key: 'C', path: '/capture', active: (p: string) => p.startsWith('/capture'), adminOnly: false },
+  { label: 'note',    desktopLabel: 'Note',       key: 'N', path: null,       active: (p: string) => p.startsWith('/note/'),   adminOnly: false },
+  { label: 'session', desktopLabel: 'Session',    key: 'S', path: null,       active: (p: string) => p.startsWith('/session/'), adminOnly: false },
+  { label: 'library', desktopLabel: 'Library',    key: 'L', path: '/library',  active: (p: string) => p.startsWith('/library'),  adminOnly: false },
+  { label: 'discover', desktopLabel: 'Discover',  key: 'X', path: '/discover', active: (p: string) => p.startsWith('/discover'), adminOnly: false },
+  { label: 'settings', desktopLabel: 'Settings',  key: 'T', path: '/settings', active: (p: string) => p.startsWith('/settings'), adminOnly: false },
+  { label: 'admin',   desktopLabel: 'Admin',      key: 'A', path: '/admin',    active: (p: string) => p.startsWith('/admin'),    adminOnly: true },
 ]
 
 function pad2(n: number) {
@@ -19,7 +23,7 @@ function pad2(n: number) {
 export function Shell() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, role } = useAuth()
   const [dueCount, setDueCount] = useState(0)
 
   useEffect(() => {
@@ -29,7 +33,8 @@ export function Shell() {
     }, () => {})
   }, [])
 
-  const currentNav = NAV.find(item => item.active(location.pathname))
+  const visibleNav = NAV.filter(item => !item.adminOnly || isAdminRole(role))
+  const currentNav = visibleNav.find(item => item.active(location.pathname))
   const initials = user?.displayName
     ? user.displayName
         .split(' ')
@@ -47,7 +52,7 @@ export function Shell() {
         <span className="invisible select-none">00:00</span>
         <div className="flex items-center gap-2">
           <span>●●●</span>
-          <span>recall</span>
+          <span>commonbook</span>
           <span className="text-accent">▮</span>
         </div>
       </div>
@@ -55,7 +60,7 @@ export function Shell() {
       {/* ── MOBILE: brand bar ── */}
       <div className="md:hidden shrink-0 px-5 pt-1 pb-3 flex items-center justify-between border-b border-rule">
         <div className="flex items-baseline gap-2">
-          <span className="font-mono text-[13px] tracking-[0.2em] uppercase font-medium">recall</span>
+          <span className="font-mono text-[13px] tracking-[0.2em] uppercase font-medium">commonbook</span>
           <span className="font-mono text-[13px] text-accent">/</span>
           <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
             {currentNav?.label ?? ''}
@@ -77,7 +82,7 @@ export function Shell() {
             <span className="w-3 h-3 border border-rule-2 rounded-full" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-mono text-[15px] tracking-[0.2em] uppercase font-medium">recall</span>
+            <span className="font-mono text-[15px] tracking-[0.2em] uppercase font-medium">commonbook</span>
             <span className="font-mono text-[15px] text-accent">/</span>
           </div>
           <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.18em] text-dim">knowledge retention</div>
@@ -86,7 +91,7 @@ export function Shell() {
         <Rule />
 
         <nav className="py-3">
-          {NAV.map(item => {
+          {visibleNav.map(item => {
             const active = item.active(location.pathname)
             return (
               <button
@@ -150,7 +155,7 @@ export function Shell() {
       {/* ── MOBILE: bottom nav ── */}
       <div className="md:hidden shrink-0 bg-ink border-t border-rule">
         <div className="px-5 py-3 flex items-center justify-between font-mono text-[12px] uppercase tracking-[0.18em]">
-          {NAV.map(item => {
+          {visibleNav.map(item => {
             const isActive = item.active(location.pathname)
             return (
               <button

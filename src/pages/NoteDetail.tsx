@@ -369,7 +369,7 @@ export default function NoteDetail() {
                               className="text-[11px] uppercase tracking-[0.18em] mb-[2px]"
                               style={{ color: m.role === 'user' ? 'var(--accent)' : 'var(--muted)' }}
                             >
-                              {m.role === 'user' ? '> me' : 'recall'}
+                              {m.role === 'user' ? '> me' : 'commonbook'}
                             </div>
                             <div style={{ color: 'var(--text)' }}>{m.content}</div>
                           </div>

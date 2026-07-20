@@ -1,0 +1,52 @@
+// Recommended Firestore security rules for commonbook (recall-4899d project).
+//
+// NOT currently deployed automatically — there's no firebase.json wiring this file up,
+// and rules are managed directly in the Firebase console today. Paste this into
+// Firebase console → recall-4899d → Firestore Database → Rules, then Publish.
+// See CLAUDE.md's "Role system" section for the access model this enforces.
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function hasAccess() {
+      return request.auth != null &&
+        request.auth.token.role in ['USER', 'ADMIN', 'SUPERADMIN'];
+    }
+
+    function isAdmin() {
+      return request.auth != null &&
+        request.auth.token.role in ['ADMIN', 'SUPERADMIN'];
+    }
+
+    match /notes/{noteId} {
+      allow read, write: if hasAccess();
+    }
+
+    match /sessions/{sessionId} {
+      allow read, write: if hasAccess();
+    }
+
+    match /meta/{docId} {
+      allow read, write: if hasAccess();
+    }
+
+    // Any authenticated user may create their own onboarding doc (always role: PENDING —
+    // ensureUserDoc never lets a client self-assign a different role). Users may update
+    // their own non-role fields (articlesAppUid, interestKeywords); only admins may change
+    // anyone's role field, and admins may read/write the whole collection for the /admin panel.
+    match /users/{uid} {
+      allow create: if request.auth != null &&
+        request.auth.uid == uid &&
+        request.resource.data.role == 'PENDING';
+
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow read: if isAdmin();
+
+      allow update: if request.auth != null && request.auth.uid == uid &&
+        !('role' in request.resource.data.diff(resource.data).affectedKeys());
+      allow update: if isAdmin();
+    }
+  }
+}

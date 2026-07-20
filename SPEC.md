@@ -1,4 +1,4 @@
-# Recall — Personal Knowledge Retention App
+# commonbook — Personal Knowledge Retention App
 ## Spec for Claude Code
 
 ---
