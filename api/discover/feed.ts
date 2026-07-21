@@ -1,6 +1,6 @@
 import { getApps, initializeApp, cert, type App } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
-import { getUnreadArticlesForKeywords, getCategories } from '../_lib/turso'
+import { getUnreadArticlesForKeywords, getCategories } from '../_lib/turso.js'
 
 type Role = 'PENDING' | 'USER' | 'ADMIN' | 'SUPERADMIN'
 

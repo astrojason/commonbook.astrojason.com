@@ -1,7 +1,7 @@
 import { getApps, initializeApp, cert, type App } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
-import { scrapeArticleFullText } from '../_lib/scrapeArticle'
-import { updateArticleContent } from '../_lib/turso'
+import { scrapeArticleFullText } from '../_lib/scrapeArticle.js'
+import { updateArticleContent } from '../_lib/turso.js'
 
 type Role = 'PENDING' | 'USER' | 'ADMIN' | 'SUPERADMIN'
 
