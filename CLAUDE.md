@@ -42,6 +42,10 @@ A task is not done until:
    - **PLAN.md** — strikethrough the completed stage heading (e.g. `~~## Stage 1 — Project Scaffold~~`)
    - **TODO.md** — check off the corresponding item (e.g. `- [x] Stage 1 — Project Scaffold`); create the file if it doesn't exist
 
+### Versioning
+
+`package.json`'s `version` follows semantic versioning and is bumped automatically by a `pre-commit` git hook (`.githooks/pre-commit`, wired up via `npm run prepare` → `git config core.hooksPath .githooks`) — never bump it by hand. The hook recommends `patch`; on an interactive commit (a human at a terminal) it prompts to override to `minor`/`major`/skip, and on a non-interactive commit (Claude Code, CI) it takes the `patch` recommendation automatically. The current version is exposed to the app as `__APP_VERSION__` (defined in `vite.config.ts` from `package.json`) and rendered in the footer (`src/components/Shell.tsx`).
+
 ---
 
 ## Error handling

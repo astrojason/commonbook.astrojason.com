@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Bumps package.json's semver version on every commit.
+# Recommends "patch" by default; when run from an interactive terminal
+# (a human running `git commit`), prompts so you can override to
+# minor/major. Non-interactive commits (e.g. Claude Code, CI) take the
+# recommendation automatically so they never hang.
+set -e
+
+if [ -n "$SKIP_VERSION_BUMP" ]; then
+  exit 0
+fi
+
+RECOMMENDED="patch"
+BUMP="$RECOMMENDED"
+
+TTY_OK=1
+{ exec 3<>/dev/tty; } 2>/dev/null || TTY_OK=0
+if [ "$TTY_OK" = "1" ]; then
+  echo "Version bump (semver) — recommended: $RECOMMENDED" >&3
+  read -r -p "Bump [p]atch / [m]inor / [M]ajor / [s]kip? (default: p) " choice <&3 || true
+  exec 3>&-
+  case "$choice" in
+    m) BUMP="minor" ;;
+    M) BUMP="major" ;;
+    s|S) BUMP="" ;;
+    *) BUMP="$RECOMMENDED" ;;
+  esac
+fi
+
+if [ -n "$BUMP" ]; then
+  npm version "$BUMP" --no-git-tag-version --allow-same-version > /dev/null
+  git add package.json
+  if [ -f package-lock.json ]; then git add package-lock.json; fi
+  NEW_VERSION=$(node -p "require('./package.json').version")
+  echo "Bumped version to $NEW_VERSION"
+fi

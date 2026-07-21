@@ -144,6 +144,10 @@ export function Shell() {
             <div className="font-mono text-[11px] text-dim">—</div>
           </div>
         </div>
+
+        <div className="px-5 pb-4 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+          v{__APP_VERSION__}
+        </div>
       </aside>
 
       {/* ── BODY ── */}
@@ -171,6 +175,9 @@ export function Shell() {
               </button>
             )
           })}
+        </div>
+        <div className="text-center font-mono text-[9px] uppercase tracking-[0.18em] text-dim">
+          v{__APP_VERSION__}
         </div>
         <div className="h-4" />
       </div>
