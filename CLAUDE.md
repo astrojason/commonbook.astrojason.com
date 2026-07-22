@@ -40,7 +40,7 @@ A task is not done until:
 2. The build passes (`npm run build`)
 3. Progress is recorded:
    - **PLAN.md** — strikethrough the completed stage heading (e.g. `~~## Stage 1 — Project Scaffold~~`)
-   - **TODO.md** — check off the corresponding item (e.g. `- [x] Stage 1 — Project Scaffold`); create the file if it doesn't exist
+   - **TODO.md** — remove the item once the work has been committed; create the file if it doesn't exist. The git log is the record.
 
 ### Versioning
 
