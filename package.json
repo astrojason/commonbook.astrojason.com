@@ -1,7 +1,7 @@
 {
   "name": "commonbook",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "scripts": {
     "prepare": "git config core.hooksPath .githooks",
@@ -12,6 +12,9 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "bootstrap-superadmin": "tsx scripts/bootstrap-superadmin.ts"
+  },
+  "overrides": {
+    "jose": "5.10.0"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",
