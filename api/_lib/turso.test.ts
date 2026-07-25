@@ -27,7 +27,7 @@ describe('getUnreadArticlesForKeywords', () => {
     const call = execute.mock.calls[0][0]
     expect(call.sql).toContain('a.created_by_uid = ?')
     expect(call.sql).toContain('NOT EXISTS')
-    expect((call.sql.match(/LOWER\(a\.search_terms\) LIKE LOWER\(\?\)/g) ?? []).length).toBe(2)
+    expect((call.sql.match(/LOWER\(a\.keywords\) LIKE LOWER\(\?\)/g) ?? []).length).toBe(2)
     expect(call.args).toEqual(expect.arrayContaining(['%woodworking%', '%astronomy%']))
   })
 
@@ -45,7 +45,7 @@ describe('getUnreadArticlesForKeywords', () => {
     expect(call.args).toContain('DIY')
   })
 
-  it('maps rows into DiscoverArticle shape, parsing JSON search_terms and || categories', async () => {
+  it('maps rows into DiscoverArticle shape, parsing JSON keywords and || categories', async () => {
     execute.mockResolvedValue({
       rows: [{
         id: 42,
@@ -53,7 +53,7 @@ describe('getUnreadArticlesForKeywords', () => {
         url: 'https://example.com/a',
         summary: 'A summary',
         reading_time: 5,
-        search_terms: '["woodworking","tools"]',
+        keywords: '["woodworking","tools"]',
         content: 'full text',
         created_timestamp: 1700000000,
         categories: 'DIY||Home',
@@ -66,22 +66,22 @@ describe('getUnreadArticlesForKeywords', () => {
       url: 'https://example.com/a',
       summary: 'A summary',
       readingTime: 5,
-      searchTerms: ['woodworking', 'tools'],
+      keywords: ['woodworking', 'tools'],
       content: 'full text',
       createdAt: 1700000000,
       categories: ['DIY', 'Home'],
     })
   })
 
-  it('handles empty categories string and malformed search_terms JSON gracefully', async () => {
+  it('handles empty categories string and malformed keywords JSON gracefully', async () => {
     execute.mockResolvedValue({
       rows: [{
         id: 1, title: 't', url: 'u', summary: '', reading_time: 0,
-        search_terms: 'not json', content: '', created_timestamp: 0, categories: '',
+        keywords: 'not json', content: '', created_timestamp: 0, categories: '',
       }],
     })
     const [article] = await getUnreadArticlesForKeywords('uid-1', ['x'])
-    expect(article.searchTerms).toEqual([])
+    expect(article.keywords).toEqual([])
     expect(article.categories).toEqual([])
   })
 })

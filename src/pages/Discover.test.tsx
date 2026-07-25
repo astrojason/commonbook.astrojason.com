@@ -45,7 +45,7 @@ function makeArticle(overrides: Partial<DiscoverArticle> = {}): DiscoverArticle 
     url: 'https://example.com/great-article',
     summary: 'An excellent summary of the article.',
     readingTime: 6,
-    searchTerms: ['woodworking'],
+    keywords: ['woodworking'],
     categories: ['DIY'],
     content: '',
     createdAt: 1700000000,

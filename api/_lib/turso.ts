@@ -22,19 +22,19 @@ export interface DiscoverArticle {
   url: string
   summary: string
   readingTime: number
-  searchTerms: string[]
+  keywords: string[]
   categories: string[]
   content: string
   createdAt: number
 }
 
 function rowToArticle(row: Row): DiscoverArticle {
-  let searchTerms: string[] = []
+  let keywords: string[] = []
   try {
-    const parsed = JSON.parse(String(row.search_terms ?? '[]'))
-    if (Array.isArray(parsed)) searchTerms = parsed
+    const parsed = JSON.parse(String(row.keywords ?? '[]'))
+    if (Array.isArray(parsed)) keywords = parsed
   } catch {
-    searchTerms = []
+    keywords = []
   }
 
   const categoriesStr = String(row.categories ?? '')
@@ -45,7 +45,7 @@ function rowToArticle(row: Row): DiscoverArticle {
     url: String(row.url ?? ''),
     summary: String(row.summary ?? ''),
     readingTime: Number(row.reading_time ?? 0),
-    searchTerms,
+    keywords,
     categories: categoriesStr ? categoriesStr.split('||') : [],
     content: String(row.content ?? ''),
     createdAt: Number(row.created_timestamp ?? 0),
@@ -57,7 +57,7 @@ export interface DiscoverFilterOptions {
   category?: string
 }
 
-/** Unread articles for articlesAppUid matching at least one of `keywords` against search_terms. */
+/** Unread articles for articlesAppUid matching at least one of `keywords` against the article's controlled-taxonomy keywords column. */
 export async function getUnreadArticlesForKeywords(
   articlesAppUid: string,
   keywords: string[],
@@ -65,7 +65,7 @@ export async function getUnreadArticlesForKeywords(
 ): Promise<DiscoverArticle[]> {
   if (keywords.length === 0) return []
 
-  const keywordClauses = keywords.map(() => 'LOWER(a.search_terms) LIKE LOWER(?)').join(' OR ')
+  const keywordClauses = keywords.map(() => 'LOWER(a.keywords) LIKE LOWER(?)').join(' OR ')
   const keywordArgs = keywords.map(k => `%${k}%`)
 
   let extraSql = ''
@@ -73,7 +73,7 @@ export async function getUnreadArticlesForKeywords(
 
   if (opts.search) {
     const pattern = `%${opts.search}%`
-    extraSql += ' AND (LOWER(a.title) LIKE LOWER(?) OR LOWER(a.summary) LIKE LOWER(?) OR LOWER(a.search_terms) LIKE LOWER(?))'
+    extraSql += ' AND (LOWER(a.title) LIKE LOWER(?) OR LOWER(a.summary) LIKE LOWER(?) OR LOWER(a.keywords) LIKE LOWER(?))'
     extraArgs.push(pattern, pattern, pattern)
   }
 
@@ -94,7 +94,7 @@ export async function getUnreadArticlesForKeywords(
       a.url,
       COALESCE(a.summary, '') as summary,
       COALESCE(a.reading_time, 0) as reading_time,
-      COALESCE(a.search_terms, '[]') as search_terms,
+      COALESCE(a.keywords, '[]') as keywords,
       COALESCE(a.content, '') as content,
       a.created_timestamp,
       COALESCE((

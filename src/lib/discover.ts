@@ -4,7 +4,7 @@ export interface DiscoverArticle {
   url: string
   summary: string
   readingTime: number
-  searchTerms: string[]
+  keywords: string[]
   categories: string[]
   content: string
   createdAt: number
