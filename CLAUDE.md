@@ -44,7 +44,9 @@ A task is not done until:
 
 ### Versioning
 
-`package.json`'s `version` follows semantic versioning and is bumped automatically by a `pre-commit` git hook (`.githooks/pre-commit`, wired up via `npm run prepare` → `git config core.hooksPath .githooks`) — never bump it by hand. The hook recommends `patch`; on an interactive commit (a human at a terminal) it prompts to override to `minor`/`major`/skip, and on a non-interactive commit (Claude Code, CI) it takes the `patch` recommendation automatically. The current version is exposed to the app as `__APP_VERSION__` (defined in `vite.config.ts` from `package.json`) and rendered in the footer (`src/components/Shell.tsx`).
+`package.json`'s `version` follows semantic versioning and is bumped automatically by a `pre-commit` git hook (`.githooks/pre-commit`, wired up via `npm run prepare` → `git config core.hooksPath .githooks`) — never bump it by hand. The hook recommends `patch`; on an interactive commit (a human at a terminal) it prompts to override to `minor`/`major`/skip, and on a non-interactive commit (Claude Code, CI) it takes the `patch` recommendation automatically. The current version is exposed to the app as `__APP_VERSION__` (defined in `vite.config.ts` from `package.json`) and rendered in the footer (`src/components/Shell.tsx`). For CLAUDE.md-only commits, use `--no-verify` to skip the bump entirely.
+
+The version in `Shell.tsx` must be a clickable link to `/changelog`. The changelog page renders the git log — each entry shows the short hash and commit message (`git log --pretty=format:"%h %s" -n 50`), served from a Vercel serverless function at `/api/changelog` if not already present.
 
 ---
 
