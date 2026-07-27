@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { subscribeToNotes } from '../lib/notes'
 import { isAdminRole } from '../lib/roles'
@@ -145,9 +145,9 @@ export function Shell() {
           </div>
         </div>
 
-        <div className="px-5 pb-4 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+        <Link to="/changelog" className="px-5 pb-4 font-mono text-[10px] uppercase tracking-[0.18em] text-dim hover:text-accent transition-colors block">
           v{__APP_VERSION__}
-        </div>
+        </Link>
       </aside>
 
       {/* ── BODY ── */}
@@ -176,9 +176,9 @@ export function Shell() {
             )
           })}
         </div>
-        <div className="text-center font-mono text-[9px] uppercase tracking-[0.18em] text-dim">
+        <Link to="/changelog" className="text-center font-mono text-[9px] uppercase tracking-[0.18em] text-dim hover:text-accent transition-colors block">
           v{__APP_VERSION__}
-        </div>
+        </Link>
         <div className="h-4" />
       </div>
     </div>

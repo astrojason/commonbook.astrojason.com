@@ -13,6 +13,7 @@ import Library from './pages/Library'
 import Admin from './pages/Admin'
 import Settings from './pages/Settings'
 import Discover from './pages/Discover'
+import Changelog from './pages/Changelog'
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
               <Route element={<RequireAdmin />}>
                 <Route path="/admin" element={<Admin />} />
               </Route>
+              <Route path="/changelog" element={<Changelog />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
