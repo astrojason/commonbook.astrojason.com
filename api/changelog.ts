@@ -1,9 +1,17 @@
 import { execSync } from 'child_process';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { readFileSync } from 'fs';
 import path from 'path';
 
-export default function handler(_req: VercelRequest, res: VercelResponse) {
+interface Req {
+  method: string
+}
+
+interface Res {
+  setHeader(name: string, value: string): void
+  json(data: unknown): void
+}
+
+export default function handler(_req: Req, res: Res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const log = execSync(
     'git log --pretty=format:%h|%s|%ad --date=short -n 50',

@@ -1,4 +1,4 @@
-import { createClient, type Client, type Row } from '@libsql/client'
+import { createClient, type Client, type Row, type InValue } from '@libsql/client'
 
 // Direct read/write access to articles.astrojason.com's shared Turso DB — no HTTP
 // call into that app's Go backend. Schema (article, user_article_read,
@@ -69,7 +69,7 @@ export async function getUnreadArticlesForKeywords(
   const keywordArgs = keywords.map(k => `%${k}%`)
 
   let extraSql = ''
-  const extraArgs: unknown[] = []
+  const extraArgs: InValue[] = []
 
   if (opts.search) {
     const pattern = `%${opts.search}%`

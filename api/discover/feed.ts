@@ -1,5 +1,5 @@
 import { getApps, initializeApp, cert, type App } from 'firebase-admin/app'
-import { getAuth } from 'firebase-admin/auth'
+import { getAuth, type DecodedIdToken } from 'firebase-admin/auth'
 import { getUnreadArticlesForKeywords, getCategories } from '../_lib/turso.js'
 
 type Role = 'PENDING' | 'USER' | 'ADMIN' | 'SUPERADMIN'
@@ -44,7 +44,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
   }
 
   const app = getAdminApp()
-  let callerClaims: { role?: Role }
+  let callerClaims: DecodedIdToken & { role?: Role }
   try {
     callerClaims = await getAuth(app).verifyIdToken(token)
   } catch {
