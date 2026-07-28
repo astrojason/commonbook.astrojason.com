@@ -188,6 +188,27 @@ describe('Session — SESSION_COMPLETE detection', () => {
     expect(navState).toHaveTextContent('"suggestedRating":2')
   })
 
+  it('parses a suggested rating even when the model paraphrases the RATING:X token', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(
+        makeSSEResponse([
+          { choices: [{ delta: { content: 'Solid grasp overall.\nSuggested rating: 4\nSESSION_COMPLETE' } }] },
+        ]),
+      ),
+    )
+
+    const user = userEvent.setup()
+    renderSession()
+
+    await user.type(await screen.findByLabelText('message input'), 'my answer')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+
+    await user.click(await screen.findByTestId('rate-session-btn'))
+
+    const navState = await screen.findByTestId('nav-state')
+    expect(navState).toHaveTextContent('"suggestedRating":4')
+  })
+
   it('strips RATING:X from the displayed message content', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
       Promise.resolve(

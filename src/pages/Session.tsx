@@ -50,8 +50,13 @@ export default function SessionPage() {
             if (lastAssistant) {
               const match = lastAssistant.content.match(/suggested rating:\s*(\w+)/i)
               if (match) {
-                const idx = ratingLabels.indexOf(match[1].toLowerCase())
-                if (idx !== -1) setSuggestedRating(idx + 1)
+                const asDigit = parseInt(match[1], 10)
+                if (asDigit >= 1 && asDigit <= 5) {
+                  setSuggestedRating(asDigit)
+                } else {
+                  const idx = ratingLabels.indexOf(match[1].toLowerCase())
+                  if (idx !== -1) setSuggestedRating(idx + 1)
+                }
               }
             }
           }
@@ -243,15 +248,15 @@ export default function SessionPage() {
         }
       }
 
-      const isComplete = accumulated.includes('SESSION_COMPLETE')
-      const ratingMatch = accumulated.match(/RATING:([1-5])/)
+      const isComplete = /SESSION_COMPLETE/i.test(accumulated)
+      const ratingMatch = accumulated.match(/(?:suggested\s+)?rating\s*:\s*([1-5])/i)
       const suggestedRating = ratingMatch ? parseInt(ratingMatch[1], 10) : undefined
       const ratingLabels = ['cold', 'cool', 'warm', 'hot', 'solid']
       const displayContent = accumulated
-        .replace(/\nRATING:([1-5])\s*/g, (_, r) => `\n\nSuggested rating: ${ratingLabels[parseInt(r, 10) - 1]}`)
-        .replace(/RATING:([1-5])\s*/g, (_, r) => `Suggested rating: ${ratingLabels[parseInt(r, 10) - 1]}`)
-        .replace(/\nSESSION_COMPLETE\s*$/, '')
-        .replace(/SESSION_COMPLETE\s*$/, '')
+        .replace(/\n(?:suggested\s+)?rating\s*:\s*([1-5])\s*/gi, (_, r) => `\n\nSuggested rating: ${ratingLabels[parseInt(r, 10) - 1]}`)
+        .replace(/(?:suggested\s+)?rating\s*:\s*([1-5])\s*/gi, (_, r) => `Suggested rating: ${ratingLabels[parseInt(r, 10) - 1]}`)
+        .replace(/\nSESSION_COMPLETE\s*$/i, '')
+        .replace(/SESSION_COMPLETE\s*$/i, '')
         .trim()
 
       const assistantMessage: Message = {
