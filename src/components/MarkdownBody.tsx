@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { breakUpProse } from '../lib/prose'
 
 export function MarkdownBody({ children }: { children: string }) {
   return (
@@ -7,10 +8,10 @@ export function MarkdownBody({ children }: { children: string }) {
       remarkPlugins={[remarkGfm]}
       components={{
         p: ({ children }) => (
-          <p className="mt-0 mb-3 last:mb-0 font-mono text-[14px] md:text-[16px] leading-[1.7] md:leading-[1.75]" style={{ color: 'var(--text)' }}>{children}</p>
+          <p className="mt-0 mb-5 last:mb-0 font-mono text-[14px] md:text-[16px] leading-[1.7] md:leading-[1.75]" style={{ color: 'var(--text)' }}>{children}</p>
         ),
         strong: ({ children }) => (
-          <strong className="font-bold" style={{ color: 'var(--text)' }}>{children}</strong>
+          <strong className="font-bold" style={{ color: 'var(--accent)' }}>{children}</strong>
         ),
         em: ({ children }) => (
           <em className="italic" style={{ color: 'var(--text)' }}>{children}</em>
@@ -67,7 +68,7 @@ export function MarkdownBody({ children }: { children: string }) {
         ),
       }}
     >
-      {children}
+      {breakUpProse(children)}
     </ReactMarkdown>
   )
 }

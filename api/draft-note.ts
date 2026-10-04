@@ -36,6 +36,8 @@ Produce a JSON object with exactly these fields:
 - "why_it_matters": why this idea is significant or useful (1-3 sentences)
 - "application": a plain-language explanation or analogy a reader could use to explain this idea to someone else (not an action plan)
 
+Formatting: every field is rendered as Markdown and must be easy to scan, never a wall of text. Keep paragraphs to 1-2 sentences separated by blank lines, use "-" bullet lists for parallel points, and **bold** the one or two key terms per field.
+
 Respond with only the JSON object, no other text.`
 }
 

@@ -226,14 +226,14 @@ export default function NoteDetail() {
               { n: '03', label: 'How',  body: note.application },
             ] as const).map((s, i) => (
               <div key={s.n}>
-                <div className="px-5 md:px-10 py-5 md:py-7">
+                <div className="px-5 md:px-10 py-7 md:py-9">
                   <div className="flex items-baseline gap-3">
                     <span className="font-mono text-[11px] md:text-[12px] text-dim">{s.n}</span>
                     <span className="font-mono text-[12px] md:text-[13px] uppercase tracking-[0.18em]" style={{ color: 'var(--accent)' }}>
                       {s.label}
                     </span>
                   </div>
-                  <div className="mt-3 md:mt-4">
+                  <div className="mt-4 md:mt-5 pl-4 border-l-2" style={{ borderColor: 'var(--rule-2)' }}>
                     <MarkdownBody>{s.body}</MarkdownBody>
                   </div>
                 </div>
