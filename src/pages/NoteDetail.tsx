@@ -9,6 +9,7 @@ import { Rule } from '../components/Rule'
 import { StrengthBar } from '../components/StrengthBar'
 import { MarkdownBody } from '../components/MarkdownBody'
 import { Spinner } from '../components/Spinner'
+import { SpeedReader } from '../components/SpeedReader'
 import { useToast } from '../contexts/ToastContext'
 import type { Note, Session } from '../types'
 
@@ -58,6 +59,7 @@ export default function NoteDetail() {
   const [error, setError] = useState<string | null>(null)
   const [completedSessions, setCompletedSessions] = useState<Session[]>([])
   const [openSessionId, setOpenSessionId] = useState<string | null>(null)
+  const [speedReading, setSpeedReading] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -160,6 +162,12 @@ export default function NoteDetail() {
 
   return (
     <div className="pt-6 pb-32 md:pt-0 md:pb-0 md:h-full md:flex md:flex-col">
+      {speedReading && (
+        <SpeedReader
+          text={[note.what_it_said, note.why_it_matters, note.application].join('\n\n')}
+          onClose={() => setSpeedReading(false)}
+        />
+      )}
 
       {/* breadcrumb + title */}
       <div className="px-5 md:px-10 md:pt-6 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-dim">
@@ -277,6 +285,12 @@ export default function NoteDetail() {
                 {startingSession
                   ? <span className="inline-flex items-center gap-2"><Spinner />opening…</span>
                   : '→ start session'}
+              </button>
+              <button
+                onClick={() => setSpeedReading(true)}
+                className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-rule text-muted hover:border-rule-2"
+              >
+                speed read
               </button>
               <button
                 onClick={() => navigate(`/capture?edit=${id}`)}
