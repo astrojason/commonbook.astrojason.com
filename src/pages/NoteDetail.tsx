@@ -161,7 +161,7 @@ export default function NoteDetail() {
   const due = isDue(note.next_review_at)
 
   return (
-    <div className="pt-6 pb-32 md:pt-0 md:pb-0 md:h-full md:flex md:flex-col">
+    <div className="pt-6 md:pt-0 md:h-full md:flex md:flex-col">
       {speedReading && (
         <SpeedReader
           text={[note.what_it_said, note.why_it_matters, note.application].join('\n\n')}
@@ -274,58 +274,6 @@ export default function NoteDetail() {
                 {error}
               </pre>
             )}
-
-            {/* actions */}
-            <div className="px-5 md:px-10 py-5 flex items-center gap-3">
-              <button
-                onClick={handleStartSession}
-                disabled={startingSession}
-                className="flex-1 md:flex-none font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-accent text-accent hover:bg-ink-2 disabled:opacity-50"
-              >
-                {startingSession
-                  ? <span className="inline-flex items-center gap-2"><Spinner />opening…</span>
-                  : '→ start session'}
-              </button>
-              <button
-                onClick={() => setSpeedReading(true)}
-                className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-rule text-muted hover:border-rule-2"
-              >
-                speed read
-              </button>
-              <button
-                onClick={() => navigate(`/capture?edit=${id}`)}
-                className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-rule text-muted hover:border-rule-2"
-              >
-                edit
-              </button>
-              {confirmingDelete ? (
-                <>
-                  <button
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-accent text-accent disabled:opacity-50"
-                  >
-                    {deleting
-                      ? <span className="inline-flex items-center gap-2"><Spinner />deleting…</span>
-                      : 'confirm'}
-                  </button>
-                  <button
-                    onClick={() => setConfirmingDelete(false)}
-                    disabled={deleting}
-                    className="font-mono text-[12px] uppercase tracking-[0.14em] px-2 py-3 text-dim disabled:opacity-50"
-                  >
-                    cancel
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setConfirmingDelete(true)}
-                  className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-rule text-dim hover:border-rule-2"
-                >
-                  delete
-                </button>
-              )}
-            </div>
           </div>
         </div>
 
@@ -502,6 +450,58 @@ export default function NoteDetail() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* actions — pinned to the bottom of the viewport; the note scrolls above it */}
+      <div className="sticky bottom-0 z-10 shrink-0 bg-ink border-t border-rule px-5 md:px-10 py-3 flex flex-wrap items-center gap-3">
+        <button
+          onClick={handleStartSession}
+          disabled={startingSession}
+          className="flex-1 md:flex-none font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-accent text-accent hover:bg-ink-2 disabled:opacity-50"
+        >
+          {startingSession
+            ? <span className="inline-flex items-center gap-2"><Spinner />opening…</span>
+            : '→ start session'}
+        </button>
+        <button
+          onClick={() => setSpeedReading(true)}
+          className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-rule text-muted hover:border-rule-2"
+        >
+          speed read
+        </button>
+        <button
+          onClick={() => navigate(`/capture?edit=${id}`)}
+          className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-rule text-muted hover:border-rule-2"
+        >
+          edit
+        </button>
+        {confirmingDelete ? (
+          <>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-accent text-accent disabled:opacity-50"
+            >
+              {deleting
+                ? <span className="inline-flex items-center gap-2"><Spinner />deleting…</span>
+                : 'confirm'}
+            </button>
+            <button
+              onClick={() => setConfirmingDelete(false)}
+              disabled={deleting}
+              className="font-mono text-[12px] uppercase tracking-[0.14em] px-2 py-3 text-dim disabled:opacity-50"
+            >
+              cancel
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => setConfirmingDelete(true)}
+            className="font-mono text-[12px] uppercase tracking-[0.14em] px-3 py-3 border border-rule text-dim hover:border-rule-2"
+          >
+            delete
+          </button>
+        )}
       </div>
     </div>
   )

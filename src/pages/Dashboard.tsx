@@ -5,6 +5,7 @@ import { createSession, getIncompleteSession } from '../lib/sessions'
 import { getStats } from '../lib/stats'
 import { Rule } from '../components/Rule'
 import { Tag } from '../components/Tag'
+import { MarkdownBody } from '../components/MarkdownBody'
 import { StrengthBar } from '../components/StrengthBar'
 import type { Note, Stats } from '../types'
 import type { Timestamp } from 'firebase/firestore'
@@ -174,39 +175,41 @@ export default function Dashboard() {
                   const od = overdueDays(n.next_review_at)
                   return (
                     <li key={n.id}>
-                      <button
-                        onClick={() => navigate(`/note/${n.id}`)}
-                        className="group w-full text-left px-5 md:px-10 py-4 md:py-6 hover:bg-ink-2 transition-colors"
-                      >
-                        <div className="flex items-start justify-between gap-4 md:gap-6">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-3">
-                              <Tag>{n.tag}</Tag>
-                              <span className="font-mono text-[11px] text-dim">·</span>
-                              <span
-                                className="font-mono text-[11px] uppercase tracking-wider"
-                                style={{ color: od > 0 ? 'var(--accent)' : 'var(--muted)' }}
-                              >
-                                {od === 0 ? 'due today' : `${od}d overdue`}
+                      <div className="px-5 md:px-10 py-5 md:py-7">
+                        <button
+                          onClick={() => navigate(`/note/${n.id}`)}
+                          className="group w-full text-left"
+                        >
+                          <div className="flex items-start justify-between gap-4 md:gap-6">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-3">
+                                <Tag>{n.tag}</Tag>
+                                <span className="font-mono text-[11px] text-dim">·</span>
+                                <span
+                                  className="font-mono text-[11px] uppercase tracking-wider"
+                                  style={{ color: od > 0 ? 'var(--accent)' : 'var(--muted)' }}
+                                >
+                                  {od === 0 ? 'due today' : `${od}d overdue`}
+                                </span>
+                              </div>
+                              <div className="mt-2 font-sans text-[15px] md:text-[18px] leading-snug group-hover:text-accent transition-colors">
+                                {n.title}
+                              </div>
+                            </div>
+                            <div className="shrink-0 pt-1 flex flex-col items-end gap-3">
+                              {n.last_rating != null && (
+                                <StrengthBar value={n.last_rating} showLabel={false} />
+                              )}
+                              <span className="hidden md:block font-mono text-[12px] text-dim opacity-0 group-hover:opacity-100 transition-opacity">
+                                review →
                               </span>
                             </div>
-                            <div className="mt-2 font-sans text-[15px] md:text-[18px] leading-snug">
-                              {n.title}
-                            </div>
-                            <div className="mt-1 md:mt-2 font-mono text-[12px] md:text-[13px] text-muted truncate md:whitespace-normal md:max-w-[46ch] md:leading-relaxed">
-                              {n.what_it_said}
-                            </div>
                           </div>
-                          <div className="shrink-0 pt-1 flex flex-col items-end gap-3">
-                            {n.last_rating != null && (
-                              <StrengthBar value={n.last_rating} showLabel={false} />
-                            )}
-                            <span className="hidden md:block font-mono text-[12px] text-dim opacity-0 group-hover:opacity-100 transition-opacity">
-                              review →
-                            </span>
-                          </div>
+                        </button>
+                        <div className="mt-4 pl-4 border-l-2" style={{ borderColor: 'var(--rule-2)' }}>
+                          <MarkdownBody>{n.what_it_said}</MarkdownBody>
                         </div>
-                      </button>
+                      </div>
                       {i < dueNotes.length - 1 && <Rule dashed />}
                     </li>
                   )

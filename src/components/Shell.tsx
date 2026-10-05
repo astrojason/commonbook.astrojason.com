@@ -8,8 +8,6 @@ import { Rule } from './Rule'
 const NAV = [
   { label: 'dash',    desktopLabel: 'Dashboard', key: 'D', path: '/',        active: (p: string) => p === '/',                adminOnly: false },
   { label: 'capture', desktopLabel: 'Capture',   key: 'C', path: '/capture', active: (p: string) => p.startsWith('/capture'), adminOnly: false },
-  { label: 'note',    desktopLabel: 'Note',       key: 'N', path: null,       active: (p: string) => p.startsWith('/note/'),   adminOnly: false },
-  { label: 'session', desktopLabel: 'Session',    key: 'S', path: null,       active: (p: string) => p.startsWith('/session/'), adminOnly: false },
   { label: 'library', desktopLabel: 'Library',    key: 'L', path: '/library',  active: (p: string) => p.startsWith('/library'),  adminOnly: false },
   { label: 'discover', desktopLabel: 'Discover',  key: 'X', path: '/discover', active: (p: string) => p.startsWith('/discover'), adminOnly: false },
   { label: 'settings', desktopLabel: 'Settings',  key: 'T', path: '/settings', active: (p: string) => p.startsWith('/settings'), adminOnly: false },

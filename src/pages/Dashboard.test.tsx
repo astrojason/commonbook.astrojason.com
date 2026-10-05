@@ -192,6 +192,17 @@ describe('Dashboard — Begin Session', () => {
 })
 
 describe('Dashboard — recent notes', () => {
+  it('renders a due note body with markdown formatting, not a truncated preview', async () => {
+    mockSubscribe([
+      makeNote({ what_it_said: 'First para.\n\nThis has **bold idea** in it.' }),
+    ])
+    renderDashboard()
+
+    const bold = await screen.findByText('bold idea')
+    expect(bold.tagName).toBe('STRONG')
+    expect(screen.getByText('First para.').tagName).toBe('P')
+  })
+
   it('shows up to 5 recent notes sorted newest first', async () => {
     const notes = Array.from({ length: 6 }, (_, i) =>
       makeNote({
